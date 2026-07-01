@@ -302,36 +302,51 @@
 
     .results-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 1.25rem;
-      margin-bottom: 2.5rem;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 3rem;
     }
 
+    @media (max-width: 640px) { .results-grid { grid-template-columns: 1fr; } }
+
     .result-card {
-      background: var(--navy3);
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      padding: 1.75rem;
-      transition: border-color 0.2s, transform 0.2s;
+      position: relative;
+      background: linear-gradient(135deg, var(--navy3) 0%, var(--navy2) 100%);
+      border: 1.5px solid var(--green-border);
+      border-radius: 16px;
+      padding: 2.5rem 2.5rem 2rem;
+      overflow: hidden;
+      transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+    }
+
+    .result-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 85% 50%, rgba(57,255,20,0.06) 0%, transparent 65%);
+      pointer-events: none;
     }
 
     .result-card:hover {
-      border-color: var(--green-border);
-      transform: translateY(-2px);
+      border-color: var(--green);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(57,255,20,0.1);
     }
 
     .result-year {
-      font-size: 0.75rem; font-weight: 600;
-      color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase;
+      font-size: 0.72rem; font-weight: 700;
+      color: var(--muted); letter-spacing: 0.14em; text-transform: uppercase;
       margin-bottom: 1rem;
     }
 
     .result-profit {
-      font-size: 2.2rem; font-weight: 800;
+      font-size: clamp(2.8rem, 5vw, 4.5rem);
+      font-weight: 900;
       letter-spacing: -0.03em;
       color: var(--green);
       line-height: 1;
-      margin-bottom: 0.35rem;
+      margin-bottom: 0.6rem;
+      text-shadow: 0 0 30px rgba(57,255,20,0.3);
     }
 
     .result-desc {
@@ -340,7 +355,7 @@
 
     .result-bar {
       height: 3px; background: var(--border);
-      border-radius: 2px; margin-top: 1.25rem;
+      border-radius: 2px; margin-top: 1.5rem;
       overflow: hidden;
     }
 
@@ -893,6 +908,79 @@
       display: flex; align-items: center; gap: 0.4rem;
     }
     .big-quote-source::before { content: ''; display: block; width: 20px; height: 1px; background: var(--muted2); }
+    /* ── RETURNS CALCULATOR ── */
+    .returns-calc {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 400;
+      background: var(--navy3);
+      border: 2px solid var(--green);
+      border-radius: 16px;
+      padding: 1.5rem;
+      width: 290px;
+      box-shadow: 0 0 40px rgba(57,255,20,0.2);
+    }
+
+    .returns-calc-close {
+      position: absolute;
+      top: 0.75rem; right: 0.9rem;
+      background: none; border: none;
+      color: var(--muted); font-size: 1.3rem;
+      cursor: pointer; line-height: 1;
+      transition: color 0.2s;
+    }
+    .returns-calc-close:hover { color: var(--text); }
+
+    .returns-calc-title {
+      font-size: 0.8rem; font-weight: 800;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text); margin-bottom: 1.25rem;
+      padding-right: 1.5rem;
+    }
+
+    .returns-calc-row {
+      display: flex; justify-content: space-between;
+      align-items: center; margin-bottom: 0.6rem;
+    }
+
+    .returns-calc-label { font-size: 0.78rem; color: var(--muted); }
+
+    .returns-calc-input-wrap {
+      display: flex; align-items: center; gap: 0.2rem;
+      background: var(--navy4);
+      border: 1px solid var(--border);
+      border-radius: 6px; padding: 0.3rem 0.6rem;
+      font-size: 0.9rem; font-weight: 600;
+    }
+
+    .returns-calc-input {
+      background: none; border: none;
+      color: var(--text); font-size: 0.9rem;
+      font-weight: 600; width: 65px;
+      outline: none; font-family: inherit;
+    }
+
+    .returns-calc-result {
+      font-size: 1.05rem; font-weight: 800; color: var(--green);
+    }
+
+    .returns-calc-note {
+      font-size: 0.68rem; color: var(--muted2);
+      margin: 0.3rem 0 1rem; text-align: right;
+    }
+
+    .returns-calc-cta {
+      display: block; width: 100%;
+      text-align: center; padding: 0.7rem;
+      background: var(--green); color: #000;
+      font-weight: 800; font-size: 0.85rem;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      border-radius: 8px; cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .returns-calc-cta:hover { opacity: 0.85; }
+
   </style>
 </head>
 <body>
@@ -937,6 +1025,30 @@
   <p class="hero-results-link">Over <strong>40+ consecutive profitable months</strong> — <a href="#results">see our full record</a></p>
 </section>
 
+<!-- LIVE RESULTS TICKER -->
+<div class="wins-strip" style="margin:0;">
+  <div class="wins-track">
+    <div class="win-chip">🏉 <span class="amount">+$518.18</span> <span class="sport">NRL SGM @ 1.72</span></div>
+    <div class="win-chip">🏉 <span class="amount">+$155.00</span> <span class="sport">NRL SGM @ 3.10</span></div>
+    <div class="win-chip">🏉 <span class="amount">+$103.64</span> <span class="sport">NRL SGM @ 1.72</span></div>
+    <div class="win-chip">⚽ <span class="amount">+$90.00</span> <span class="sport">Soccer SGM @ 1.80</span></div>
+    <div class="win-chip">⚽ <span class="amount">+5 units</span> <span class="sport">FIFA Day Sweep</span></div>
+    <div class="win-chip">💰 <span class="amount">+$450</span> <span class="sport">Member profit since joining</span></div>
+    <div class="win-chip">💰 <span class="amount">+$4,000</span> <span class="sport">Member profit in 2 weeks</span></div>
+    <div class="win-chip">⚽ <span class="amount">Mohamed Salah</span> <span class="sport">Anytime Scorer @ 2.20 ✓</span></div>
+    <div class="win-chip">🎯 <span class="amount">+6 units</span> <span class="sport">Single day profit</span></div>
+    <div class="win-chip">🏉 <span class="amount">+$518.18</span> <span class="sport">NRL SGM @ 1.72</span></div>
+    <div class="win-chip">🏉 <span class="amount">+$155.00</span> <span class="sport">NRL SGM @ 3.10</span></div>
+    <div class="win-chip">🏉 <span class="amount">+$103.64</span> <span class="sport">NRL SGM @ 1.72</span></div>
+    <div class="win-chip">⚽ <span class="amount">+$90.00</span> <span class="sport">Soccer SGM @ 1.80</span></div>
+    <div class="win-chip">⚽ <span class="amount">+5 units</span> <span class="sport">FIFA Day Sweep</span></div>
+    <div class="win-chip">💰 <span class="amount">+$450</span> <span class="sport">Member profit since joining</span></div>
+    <div class="win-chip">💰 <span class="amount">+$4,000</span> <span class="sport">Member profit in 2 weeks</span></div>
+    <div class="win-chip">⚽ <span class="amount">Mohamed Salah</span> <span class="sport">Anytime Scorer @ 2.20 ✓</span></div>
+    <div class="win-chip">🎯 <span class="amount">+6 units</span> <span class="sport">Single day profit</span></div>
+  </div>
+</div>
+
 <!-- STATS BANNER -->
 <div class="stats-banner">
   <div class="stats-inner">
@@ -972,27 +1084,27 @@
 
     <div class="results-grid">
       <div class="result-card fade-up">
-        <div class="result-year">2023 Season</div>
-        <div class="result-profit">+412.11u</div>
-        <div class="result-desc">Units profit &nbsp;·&nbsp; 68% strike rate</div>
+        <div class="result-year">2023 Season &nbsp;·&nbsp; 1,068 picks</div>
+        <div class="result-profit">+412.11 UNITS</div>
+        <div class="result-desc">68% strike rate</div>
         <div class="result-bar"><div class="result-bar-fill" style="width:68%"></div></div>
       </div>
       <div class="result-card fade-up">
-        <div class="result-year">2024 Season</div>
-        <div class="result-profit">+581.01u</div>
-        <div class="result-desc">Units profit &nbsp;·&nbsp; 71% strike rate</div>
+        <div class="result-year">2024 Season &nbsp;·&nbsp; 1,342 picks</div>
+        <div class="result-profit">+581.01 UNITS</div>
+        <div class="result-desc">71% strike rate</div>
         <div class="result-bar"><div class="result-bar-fill" style="width:71%"></div></div>
       </div>
       <div class="result-card fade-up">
-        <div class="result-year">2025 Season</div>
-        <div class="result-profit">+462.00u</div>
-        <div class="result-desc">Units profit &nbsp;·&nbsp; 74% strike rate</div>
+        <div class="result-year">2025 Season &nbsp;·&nbsp; 1,306 picks</div>
+        <div class="result-profit">+462.00 UNITS</div>
+        <div class="result-desc">74% strike rate</div>
         <div class="result-bar"><div class="result-bar-fill" style="width:74%"></div></div>
       </div>
-      <div class="result-card fade-up">
-        <div class="result-year">2026 (Running)</div>
-        <div class="result-profit">+228.00u</div>
-        <div class="result-desc">Units profit &nbsp;·&nbsp; 76% strike rate</div>
+      <div class="result-card fade-up" style="border-color: rgba(57,255,20,0.5);">
+        <div class="result-year" style="color:var(--green);">🔴 LIVE — 2026 Season</div>
+        <div class="result-profit">+228.00 UNITS</div>
+        <div class="result-desc">76% strike rate &nbsp;·&nbsp; season in progress</div>
         <div class="result-bar"><div class="result-bar-fill" style="width:76%"></div></div>
       </div>
     </div>
@@ -1283,28 +1395,6 @@
     <p class="section-lead">Unfiltered messages and verified wins from real Preemiyum Stats members. No fabrications.</p>
   </div>
 
-  <div class="wins-strip">
-    <div class="wins-track">
-      <div class="win-chip">🏉 <span class="amount">+$518.18</span> <span class="sport">NRL SGM @ 1.72</span></div>
-      <div class="win-chip">🏉 <span class="amount">+$155.00</span> <span class="sport">NRL SGM @ 3.10</span></div>
-      <div class="win-chip">🏉 <span class="amount">+$103.64</span> <span class="sport">NRL SGM @ 1.72</span></div>
-      <div class="win-chip">⚽ <span class="amount">+$90.00</span> <span class="sport">Soccer SGM @ 1.80</span></div>
-      <div class="win-chip">⚽ <span class="amount">+5 units</span> <span class="sport">FIFA Day Sweep</span></div>
-      <div class="win-chip">💰 <span class="amount">+$450</span> <span class="sport">Member profit since joining</span></div>
-      <div class="win-chip">💰 <span class="amount">+$4,000</span> <span class="sport">Member profit in 2 weeks</span></div>
-      <div class="win-chip">⚽ <span class="amount">Mohamed Salah</span> <span class="sport">Anytime Scorer @ 2.20 ✓</span></div>
-      <div class="win-chip">🎯 <span class="amount">+6 units</span> <span class="sport">Single day profit</span></div>
-      <div class="win-chip">🏉 <span class="amount">+$518.18</span> <span class="sport">NRL SGM @ 1.72</span></div>
-      <div class="win-chip">🏉 <span class="amount">+$155.00</span> <span class="sport">NRL SGM @ 3.10</span></div>
-      <div class="win-chip">🏉 <span class="amount">+$103.64</span> <span class="sport">NRL SGM @ 1.72</span></div>
-      <div class="win-chip">⚽ <span class="amount">+$90.00</span> <span class="sport">Soccer SGM @ 1.80</span></div>
-      <div class="win-chip">⚽ <span class="amount">+5 units</span> <span class="sport">FIFA Day Sweep</span></div>
-      <div class="win-chip">💰 <span class="amount">+$450</span> <span class="sport">Member profit since joining</span></div>
-      <div class="win-chip">💰 <span class="amount">+$4,000</span> <span class="sport">Member profit in 2 weeks</span></div>
-      <div class="win-chip">⚽ <span class="amount">Mohamed Salah</span> <span class="sport">Anytime Scorer @ 2.20 ✓</span></div>
-      <div class="win-chip">🎯 <span class="amount">+6 units</span> <span class="sport">Single day profit</span></div>
-    </div>
-  </div>
 
   <div class="masonry" style="padding: 2.5rem 5% 0;">
 
@@ -1621,6 +1711,37 @@
     el.style.transitionDelay = (i % 4 * 80) + 'ms';
     observer.observe(el);
   });
+
+  function calcReturns() {
+    const unit = parseFloat(document.getElementById('unitSize').value) || 0;
+    const avgUnits = 485;
+    const returns = (unit * avgUnits).toLocaleString('en-AU', {
+      style: 'currency', currency: 'AUD',
+      minimumFractionDigits: 0, maximumFractionDigits: 0
+    });
+    document.getElementById('calcResult').textContent = returns + '*';
+  }
 </script>
+
+<!-- RETURNS CALCULATOR WIDGET -->
+<div class="returns-calc" id="returnsCalc">
+  <button class="returns-calc-close" onclick="document.getElementById('returnsCalc').style.display='none'">×</button>
+  <div class="returns-calc-title">Annual Returns Calculator</div>
+  <div class="returns-calc-row">
+    <div class="returns-calc-label">Unit size:</div>
+    <div class="returns-calc-input-wrap">
+      <span style="color:var(--muted)">$</span>
+      <input type="number" class="returns-calc-input" id="unitSize" value="100" min="1" oninput="calcReturns()">
+    </div>
+  </div>
+  <div class="returns-calc-row">
+    <div class="returns-calc-label">Est. annual returns:</div>
+    <div class="returns-calc-result" id="calcResult">$48,500*</div>
+  </div>
+  <div class="returns-calc-note">*Based on our 3-year avg of 485u/year</div>
+  <a href="#packages" class="returns-calc-cta">SIGN UP NOW</a>
+</div>
+
 </body>
 </html>
+
