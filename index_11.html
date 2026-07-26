@@ -1,0 +1,2286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Preemiyum Stats | Australia's Leading Sports Betting Tips</title>
+  <meta name="description" content="Transparent, publicly-timestamped Australian sports betting tips across AFL, NRL, soccer, NBA, tennis, cricket and more. Every pick tracked, every result public. Monthly or one-time Lifetime membership." />
+  <link rel="canonical" href="https://preemiyum.com/" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Preemiyum Stats" />
+  <meta property="og:title" content="Preemiyum Stats | Australia's Leading Sports Betting Tips" />
+  <meta property="og:description" content="Transparent, publicly-timestamped Australian sports betting tips across AFL, NRL, soccer, NBA, tennis, cricket and more. Every pick tracked, every result public." />
+  <meta property="og:url" content="https://preemiyum.com/" />
+  <meta property="og:locale" content="en_AU" />
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="Preemiyum Stats | Australia's Leading Sports Betting Tips" />
+  <meta name="twitter:description" content="Transparent, publicly-timestamped Australian sports betting tips. Every pick tracked, every result public." />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    "name": "Preemiyum Stats",
+    "url": "https://preemiyum.com/",
+    "email": "preemiyumstats@gmail.com",
+    "sameAs": ["https://www.instagram.com/preemiyumstats"],
+    "description": "Transparent Australian sports betting analysis and tips service with a fully public, timestamped results record."
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How do I receive the tips?",
+        "acceptedAnswer": { "@type": "Answer", "text": "All picks are posted to our premium Instagram story. Once you subscribe, you'll get an instant notification the moment a new pick goes live, so you never miss one." }
+      },
+      {
+        "@type": "Question",
+        "name": "Are your results independently verified?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Yes — every pick is published publicly on our Instagram before the game starts, creating a timestamped, unalterable record. Our full results table reflects exactly that record." }
+      },
+      {
+        "@type": "Question",
+        "name": "What unit size do you recommend?",
+        "acceptedAnswer": { "@type": "Answer", "text": "We recommend treating 1 unit as 1–2% of your total betting bank. This keeps your downside controlled during any losing run while still generating meaningful returns during hot streaks." }
+      },
+      {
+        "@type": "Question",
+        "name": "Can I cancel my subscription at any time?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Absolutely. There are no lock-in contracts. You can cancel any time and your access continues until the end of your current billing period." }
+      },
+      {
+        "@type": "Question",
+        "name": "I'm new to sports betting — is this right for me?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Definitely. We cater to punters at all experience levels, and all our tips come with clear explanations so you understand the reasoning behind each pick." }
+      },
+      {
+        "@type": "Question",
+        "name": "Which bookmakers do you recommend in Australia?",
+        "acceptedAnswer": { "@type": "Answer", "text": "Our tips work across all major Australian bookmakers including Sportsbet, TAB, Ladbrokes, Neds, and Pointsbet. We always recommend shopping around for the best available price before placing any bet." }
+      }
+    ]
+  }
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      /* ── PREMIUM CHAMPAGNE GOLD ACCENT SYSTEM ──
+         A single, disciplined gold hue carried at different weights/opacities
+         rather than multiple competing colours — this is what keeps a gold
+         palette feeling like a private members' platform instead of a
+         casino. --accent-bright is reserved for hover glow and primary CTAs
+         only, per the "soft ambient glow, not neon" brief. */
+      --accent:        #D4AF37;  /* primary — text, icons, links, active states */
+      --accent-deep:   #A8842E;  /* richer shade — solid badges, gradients, pressed states */
+      --accent-bright: #F2C94C;  /* brightest — hover fills & glow highlights only */
+      --accent-bg:     rgba(212,175,55,0.08);
+      --accent-border: rgba(212,175,55,0.28);
+      --accent-glow:   rgba(212,175,55,0.30);
+      --navy:    #0B0F1A;
+      --navy2:   #0F1526;
+      --navy3:   #141B2D;
+      --navy4:   #1A2238;
+      --navy5:   #202840;
+      --text:    #F0F2F8;
+      --muted:   #8892A8;
+      --muted2:  #5A6480;
+      --border:  rgba(255,255,255,0.07);
+      --border2: rgba(255,255,255,0.04);
+      --loss:    #E35D6A;  /* muted, non-brand red for losses — kept distinct from the gold accent */
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--navy);
+      color: var(--text);
+      font-family: 'Inter', -apple-system, sans-serif;
+      font-size: 16px;
+      line-height: 1.6;
+      overflow-x: hidden;
+    }
+
+    a { text-decoration: none; color: inherit; }
+
+    /* Keyboard focus — a soft gold ring instead of the default browser
+       blue, so tabbing through the page stays on-brand. */
+    :focus-visible {
+      outline: 2px solid var(--accent);
+      outline-offset: 2px;
+      border-radius: 4px;
+    }
+
+    /* ── NAV ── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 200;
+      background: rgba(11,15,26,0.92);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border);
+      height: 68px;
+      display: flex; align-items: center;
+      padding: 0 5%;
+    }
+
+    .nav-inner {
+      width: 100%; max-width: 1200px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+
+    .nav-logo {
+      display: flex; align-items: center; gap: 0.6rem;
+      font-size: 1.15rem; font-weight: 800;
+      letter-spacing: -0.01em;
+      color: var(--text);
+    }
+
+    .nav-logo .logo-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent);
+      flex-shrink: 0;
+    }
+
+    .nav-logo span { color: var(--accent); }
+
+    .nav-links {
+      display: flex; align-items: center; gap: 2rem; list-style: none;
+    }
+
+    .nav-links a {
+      font-size: 0.875rem; font-weight: 500;
+      color: var(--muted);
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--text); }
+
+    .nav-right {
+      display: flex; align-items: center; gap: 1rem;
+    }
+
+    .nav-icon-link {
+      color: var(--muted); font-size: 1.1rem;
+      transition: color 0.2s;
+    }
+
+    .nav-icon-link:hover { color: var(--accent); }
+
+    .btn-nav {
+      background: var(--accent);
+      color: var(--navy);
+      font-size: 0.85rem; font-weight: 700;
+      padding: 0.5rem 1.25rem;
+      border-radius: 6px;
+      letter-spacing: 0.02em;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .btn-nav:hover {
+      background: var(--accent-bright);
+      box-shadow: 0 4px 20px rgba(212,175,55,0.35);
+    }
+
+    .burger { display: none; flex-direction: column; gap: 5px; cursor: pointer; }
+    .burger span { display: block; width: 22px; height: 2px; background: var(--text); border-radius: 2px; }
+
+    /* ── HERO ── */
+    #hero {
+      min-height: 100vh;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center;
+      padding: 110px 5% 70px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hero-bg {
+      position: absolute; inset: 0; z-index: 0;
+      background:
+        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(212,175,55,0.08) 0%, transparent 65%),
+        radial-gradient(ellipse 40% 40% at 10% 80%, rgba(212,175,55,0.04) 0%, transparent 55%),
+        var(--navy);
+    }
+
+    .hero-grid-lines {
+      position: absolute; inset: 0; z-index: 0; opacity: 0.03;
+      background-image:
+        linear-gradient(rgba(255,255,255,0.5) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.5) 1px, transparent 1px);
+      background-size: 60px 60px;
+    }
+
+    #hero > * { position: relative; z-index: 1; }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      font-size: 0.78rem; font-weight: 600;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--accent);
+      background: var(--accent-bg);
+      border: 1px solid var(--accent-border);
+      border-radius: 100px;
+      padding: 0.4rem 1.1rem;
+      margin-bottom: 2rem;
+    }
+
+    .live-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 8px var(--accent);
+      animation: blink 1.8s infinite;
+    }
+
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+
+    .hero h1 {
+      font-size: clamp(2.5rem, 6.5vw, 5rem);
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing: -0.025em;
+      margin-bottom: 1.5rem;
+      max-width: 800px;
+    }
+
+    .hero h1 em {
+      font-style: italic;
+      color: var(--accent);
+    }
+
+    .hero-sub {
+      font-size: clamp(1rem, 1.8vw, 1.15rem);
+      color: var(--muted);
+      max-width: 520px;
+      margin: 0 auto 2.5rem;
+      font-weight: 400;
+      line-height: 1.7;
+    }
+
+    .hero-actions {
+      display: flex; gap: 0.875rem; justify-content: center; flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      padding: 0.875rem 2rem;
+      border-radius: 7px;
+      font-size: 0.95rem; font-weight: 600;
+      letter-spacing: 0.02em;
+      transition: all 0.2s;
+      cursor: pointer; border: none;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: var(--navy);
+    }
+
+    .btn-primary:hover {
+      background: var(--accent-bright);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(212,175,55,0.3);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost:hover {
+      border-color: rgba(255,255,255,0.2);
+      color: var(--text);
+      transform: translateY(-2px);
+    }
+
+    .hero-results-link {
+      margin-top: 1.5rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+    }
+
+    .hero-results-link a {
+      color: var(--accent);
+      font-weight: 600;
+      text-decoration: underline;
+      text-underline-offset: 3px;
+    }
+
+    /* ── STATS BANNER ── */
+    .stats-banner {
+      background: var(--navy2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stats-inner {
+      max-width: 1200px; margin: 0 auto;
+      display: grid; grid-template-columns: repeat(5, 1fr);
+    }
+
+    .stat-cell {
+      padding: 2rem 1.5rem;
+      text-align: center;
+      border-right: 1px solid var(--border);
+    }
+
+    .stat-cell:last-child { border-right: none; }
+
+    .stat-val {
+      font-size: 2rem; font-weight: 800;
+      letter-spacing: -0.03em;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: 0.4rem;
+    }
+
+    .stat-lbl {
+      font-size: 0.75rem; font-weight: 500;
+      color: var(--muted); letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    /* ── SECTION BASE ── */
+    section { padding: 90px 5%; }
+
+    .section-inner { max-width: 1200px; margin: 0 auto; }
+
+    .section-eyebrow {
+      font-size: 0.75rem; font-weight: 600;
+      letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.75rem;
+    }
+
+    h2 {
+      font-size: clamp(1.8rem, 3.5vw, 2.6rem);
+      font-weight: 800;
+      letter-spacing: -0.025em;
+      line-height: 1.1;
+      margin-bottom: 1rem;
+    }
+
+    .section-lead {
+      color: var(--muted);
+      max-width: 520px;
+      font-size: 1rem;
+      margin-bottom: 3rem;
+      line-height: 1.75;
+    }
+
+    /* ── RESULTS DASHBOARD ── */
+    #results { background: var(--navy2); }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.5rem;
+      margin-bottom: 3rem;
+    }
+
+    @media (max-width: 640px) { .results-grid { grid-template-columns: 1fr; } }
+
+    .result-card {
+      position: relative;
+      background: linear-gradient(135deg, var(--navy3) 0%, var(--navy2) 100%);
+      border: 1.5px solid var(--accent-border);
+      border-radius: 16px;
+      padding: 2.5rem 2.5rem 2rem;
+      overflow: hidden;
+      transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+    }
+
+    .result-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 85% 50%, rgba(212,175,55,0.06) 0%, transparent 65%);
+      pointer-events: none;
+    }
+
+    .result-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(212,175,55,0.1);
+    }
+
+    .result-year {
+      font-size: 0.72rem; font-weight: 700;
+      color: var(--muted); letter-spacing: 0.14em; text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    .result-profit {
+      font-size: clamp(2.8rem, 5vw, 4.5rem);
+      font-weight: 900;
+      letter-spacing: -0.03em;
+      color: var(--accent);
+      line-height: 1;
+      margin-bottom: 0.6rem;
+      text-shadow: 0 0 30px rgba(212,175,55,0.3);
+    }
+
+    .result-desc {
+      font-size: 0.82rem; color: var(--muted);
+    }
+
+    .result-bar {
+      height: 3px; background: var(--border);
+      border-radius: 2px; margin-top: 1.5rem;
+      overflow: hidden;
+    }
+
+    .result-bar-fill {
+      height: 100%; background: var(--accent);
+      border-radius: 2px;
+      transition: width 1s ease;
+    }
+
+    /* ── SPORT TABS ── */
+    .sport-tabs-wrap { margin-top: 3.5rem; }
+
+    .tab-nav {
+      display: flex; gap: 0; flex-wrap: wrap;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 2rem;
+    }
+
+    .tab-btn {
+      background: transparent; border: none; cursor: pointer;
+      color: var(--muted); font-family: 'Inter', sans-serif;
+      font-size: 0.875rem; font-weight: 500;
+      padding: 0.75rem 1.25rem;
+      border-bottom: 2px solid transparent;
+      margin-bottom: -1px;
+      transition: all 0.2s;
+      white-space: nowrap;
+    }
+
+    .tab-btn:hover { color: var(--text); }
+    .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+
+    .perf-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.9rem;
+    }
+
+    .perf-table th {
+      text-align: left; padding: 0.75rem 1rem;
+      font-size: 0.72rem; font-weight: 600;
+      color: var(--muted); letter-spacing: 0.08em; text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .perf-table td {
+      padding: 0.875rem 1rem;
+      border-bottom: 1px solid var(--border2);
+      color: var(--muted);
+    }
+
+    .perf-table tr:last-child td { border-bottom: none; }
+    .perf-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+    .perf-table td:first-child { color: var(--text); font-weight: 500; }
+    .perf-table .profit { color: var(--accent); font-weight: 700; }
+    .perf-table .loss { color: var(--loss); font-weight: 700; }
+
+    /* ── PERF TABLE: MOBILE STACKED CARDS ──
+       Below 700px a 6-column table is too cramped to read. Convert each
+       row into its own card with label/value pairs instead of shrinking
+       columns further. */
+    @media (max-width: 700px) {
+      .perf-table, .perf-table thead, .perf-table tbody, .perf-table tr, .perf-table td {
+        display: block; width: 100%;
+      }
+      .perf-table thead { position: absolute; left: -9999px; }
+      .perf-table tr {
+        background: var(--navy3);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 0.9rem 1rem;
+        margin-bottom: 0.75rem;
+      }
+      .perf-table tr:hover td { background: none; }
+      .perf-table td {
+        display: flex; justify-content: space-between; align-items: center;
+        padding: 0.4rem 0; border-bottom: 1px solid var(--border2);
+      }
+      .perf-table tr:last-child { margin-bottom: 0; }
+      .perf-table td:last-child { border-bottom: none; }
+      .perf-table td::before {
+        content: attr(data-label);
+        font-size: 0.72rem; font-weight: 600; letter-spacing: 0.06em;
+        text-transform: uppercase; color: var(--muted);
+      }
+      .perf-table td:first-child { font-weight: 700; font-size: 1rem; }
+      .perf-table td:first-child::before { content: ''; }
+    }
+
+    /* ── FEATURES ── */
+    #features { background: var(--navy); }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(270px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .feature-card {
+      background: var(--navy3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 2rem;
+      transition: border-color 0.2s, box-shadow 0.2s, transform 0.2s;
+    }
+
+    .feature-card:hover {
+      border-color: var(--accent-border);
+      box-shadow: 0 0 30px rgba(212,175,55,0.05);
+      transform: translateY(-3px);
+    }
+
+    .feature-icon {
+      width: 44px; height: 44px;
+      background: var(--accent-bg);
+      border: 1px solid var(--accent-border);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.25rem;
+      margin-bottom: 1.25rem;
+      color: var(--accent);
+    }
+
+    .icon { width: 1.3rem; height: 1.3rem; stroke: currentColor; fill: none; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; display: inline-block; vertical-align: middle; }
+    .sport-pill .icon, .win-chip .icon, .win-label .icon { width: 1.05rem; height: 1.05rem; color: var(--accent); }
+    .win-label .icon { color: var(--accent-deep); }
+    .pkg-tagline .icon, .returns-calc-title .icon { width: 1rem; height: 1rem; }
+
+    .feature-card h3 {
+      font-size: 1.05rem; font-weight: 700;
+      margin-bottom: 0.6rem;
+    }
+
+    .feature-card p {
+      font-size: 0.9rem; color: var(--muted); line-height: 1.7;
+    }
+
+    /* ── PACKAGES ── */
+    #packages { background: var(--navy2); }
+
+    .pkg-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+      align-items: start;
+    }
+
+    .pkg-card {
+      background: var(--navy3);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 2.25rem 2rem;
+      position: relative;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .pkg-card:hover {
+      transform: translateY(-4px);
+      border-color: var(--accent-border);
+      box-shadow: 0 20px 50px rgba(0,0,0,0.4), 0 0 40px var(--accent-glow);
+    }
+
+    .pkg-card.featured {
+      border-color: var(--accent);
+      background: linear-gradient(160deg, rgba(212,175,55,0.06) 0%, var(--navy3) 50%);
+    }
+
+    .pkg-popular-tag {
+      position: absolute; top: -13px; left: 50%; transform: translateX(-50%);
+      background: var(--accent-deep); color: var(--navy);
+      font-size: 0.68rem; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;
+      padding: 0.3rem 1rem; border-radius: 100px; white-space: nowrap;
+    }
+
+    .founding-badge {
+      position: absolute; top: 1.1rem; right: 1.1rem;
+      display: flex; align-items: center; gap: 0.35rem;
+      background: var(--accent-bg);
+      border: 1px solid var(--accent-border);
+      color: var(--accent-deep);
+      font-size: 0.64rem; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase;
+      padding: 0.3rem 0.6rem 0.3rem 0.5rem;
+      border-radius: 100px;
+      white-space: nowrap;
+    }
+    .founding-badge svg { width: 0.85rem; height: 0.85rem; }
+    @media (max-width: 400px) { .founding-badge span { display: none; } }
+
+    .pkg-tier {
+      font-size: 0.72rem; font-weight: 700;
+      color: var(--muted); letter-spacing: 0.12em; text-transform: uppercase;
+      margin-bottom: 0.75rem;
+    }
+
+    .pkg-price {
+      font-size: 3rem; font-weight: 800;
+      letter-spacing: -0.04em;
+      line-height: 1;
+      margin-bottom: 0.3rem;
+    }
+
+    .pkg-price sup { font-size: 1.4rem; vertical-align: super; color: var(--accent); }
+    .pkg-price .per { font-size: 0.95rem; color: var(--muted); font-weight: 400; }
+
+    .pkg-tagline {
+      font-size: 0.85rem; color: var(--muted);
+      margin-bottom: 1.75rem; padding-bottom: 1.75rem;
+      border-bottom: 1px solid var(--border);
+      line-height: 1.6;
+    }
+
+    .pkg-list {
+      list-style: none;
+      display: flex; flex-direction: column; gap: 0.8rem;
+      margin-bottom: 2rem;
+    }
+
+    .pkg-list li {
+      display: flex; gap: 0.6rem; align-items: flex-start;
+      font-size: 0.9rem; color: var(--muted);
+    }
+
+    .pkg-list li .tick { color: var(--accent); flex-shrink: 0; margin-top: 2px; font-size: 0.85rem; }
+    .pkg-list li.off { opacity: 0.35; text-decoration: line-through; }
+    .pkg-list li.off .tick { color: var(--muted2); }
+
+    .btn-pkg-primary {
+      width: 100%; justify-content: center;
+      background: var(--accent); color: var(--navy); font-weight: 700;
+    }
+
+    .btn-pkg-primary:hover {
+      background: var(--accent-bright);
+      box-shadow: 0 6px 24px rgba(212,175,55,0.3);
+    }
+
+    .btn-pkg-ghost {
+      width: 100%; justify-content: center;
+      background: transparent; color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-pkg-ghost:hover { border-color: rgba(255,255,255,0.2); }
+
+    .pkg-note {
+      text-align: center; color: var(--muted2); font-size: 0.78rem;
+      margin-top: 2rem;
+    }
+
+    .pkg-note a { color: var(--accent); }
+
+    .trust-bar {
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 0.75rem 1.5rem;
+      margin-top: 2.5rem; padding: 1.25rem; background: var(--navy3);
+      border: 1px solid var(--border); border-radius: 12px;
+    }
+    .trust-item {
+      display: flex; align-items: center; gap: 0.5rem;
+      font-size: 0.8rem; font-weight: 600; color: var(--muted);
+    }
+    .trust-item .icon { width: 1.05rem; height: 1.05rem; color: var(--accent-deep); }
+    @media (max-width: 640px) { .trust-bar { gap: 0.9rem 1rem; } .trust-item { font-size: 0.74rem; } }
+
+    /* ── ACTIVITY STRIP ── */
+    .activity-strip {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: center;
+      gap: 0.5rem 0.9rem;
+      max-width: 900px; margin: 0 auto;
+      padding: 0.9rem 1.5rem;
+      background: var(--navy3);
+      border: 1px solid var(--accent-border);
+      border-radius: 999px;
+      font-size: 0.82rem; color: var(--muted);
+    }
+    .activity-strip strong { color: var(--text); }
+    .activity-strip .dot-sep { color: var(--muted2); }
+    .activity-strip a { color: var(--accent); font-weight: 600; }
+    @media (max-width: 640px) {
+      .activity-strip { border-radius: 14px; font-size: 0.76rem; padding: 0.9rem 1.1rem; }
+    }
+
+    /* ── PLAN COMPARISON ── */
+    #compare { background: var(--navy); }
+    .compare-table {
+      width: 100%; max-width: 720px; margin: 0 auto;
+      border-collapse: collapse; background: var(--navy3);
+      border-radius: 14px; overflow: hidden; border: 1px solid var(--border);
+    }
+    .compare-table th, .compare-table td {
+      padding: 0.95rem 1.25rem; text-align: center; font-size: 0.88rem;
+      border-bottom: 1px solid var(--border2);
+    }
+    .compare-table thead th {
+      background: var(--navy4); font-size: 0.78rem; letter-spacing: 0.05em;
+      text-transform: uppercase; color: var(--muted); font-weight: 700;
+    }
+    .compare-table td:first-child, .compare-table th:first-child {
+      text-align: left; color: var(--text); font-weight: 600; width: 42%;
+    }
+    .compare-table tbody tr:last-child td { border-bottom: none; }
+    .compare-table .col-lifetime { background: rgba(212,175,55,0.07); color: var(--accent); font-weight: 700; }
+    .compare-table thead .col-lifetime { color: var(--accent-deep); background: rgba(212,175,55,0.1); }
+    .compare-table .yes { color: var(--accent); font-weight: 700; }
+    .compare-table .no { color: var(--muted2); }
+    @media (max-width: 560px) { .compare-table th, .compare-table td { padding: 0.75rem 0.6rem; font-size: 0.78rem; } }
+
+    /* ── QUICK FAQ (under pricing) ── */
+    #quick-faq { background: var(--navy2); padding-top: 60px; }
+    .quick-faq-list { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 0.875rem; }
+
+    /* ── TESTIMONIALS ── */
+    #testimonials { background: var(--navy); }
+
+    .testi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1.25rem;
+    }
+
+    .testi-card {
+      background: var(--navy3);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.75rem;
+      transition: border-color 0.2s;
+    }
+
+    .testi-card:hover { border-color: var(--accent-border); }
+
+    .testi-stars { color: var(--accent-deep); letter-spacing: 2px; font-size: 0.85rem; margin-bottom: 1rem; }
+
+    .testi-text {
+      font-size: 0.92rem; line-height: 1.75;
+      color: var(--text); font-style: italic;
+      margin-bottom: 1.25rem;
+    }
+
+    .testi-author { display: flex; align-items: center; gap: 0.75rem; }
+
+    .testi-ava {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: var(--navy4);
+      border: 1px solid var(--accent-border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem; font-weight: 700; color: var(--accent);
+      flex-shrink: 0;
+    }
+
+    .testi-name { font-size: 0.875rem; font-weight: 600; }
+    .testi-loc { font-size: 0.75rem; color: var(--muted); }
+
+    /* ── REFER & EARN ── */
+    #referral { background: var(--navy); }
+    .referral-icon {
+      width: 56px; height: 56px;
+      background: var(--accent-bg);
+      border: 1px solid var(--accent-border);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1.25rem;
+      color: var(--accent-deep);
+    }
+
+    /* ── FAQ ── */
+    #faq { background: var(--navy2); }
+
+    .faq-list {
+      display: flex; flex-direction: column; gap: 0.875rem;
+      max-width: 780px;
+    }
+
+    .faq-item {
+      background: var(--navy3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+
+    .faq-item.open { border-color: var(--accent-border); }
+
+    .faq-q {
+      width: 100%; background: none; border: none; cursor: pointer;
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 1rem;
+      padding: 1.25rem 1.5rem;
+      text-align: left;
+      font-family: 'Inter', sans-serif; font-size: 0.95rem; font-weight: 600;
+      color: var(--text);
+    }
+
+    .faq-chevron {
+      flex-shrink: 0; color: var(--accent);
+      font-size: 1.1rem;
+      transition: transform 0.25s;
+    }
+
+    .faq-item.open .faq-chevron { transform: rotate(45deg); }
+
+    .faq-a {
+      display: none;
+      padding: 0 1.5rem 1.25rem;
+      font-size: 0.9rem; color: var(--muted); line-height: 1.75;
+    }
+
+    .faq-item.open .faq-a { display: block; }
+
+    /* ── HOW IT WORKS ── */
+    #how-it-works { background: var(--navy2); }
+
+    .hiw-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 2rem;
+      position: relative;
+    }
+    @media (max-width: 800px) { .hiw-grid { grid-template-columns: 1fr; gap: 1.5rem; } }
+
+    .hiw-step { text-align: center; padding: 0 1rem; }
+
+    .hiw-num {
+      width: 32px; height: 32px; margin: 0 auto 1rem;
+      border-radius: 50%; background: var(--accent-deep); color: var(--navy);
+      font-weight: 800; font-size: 0.9rem;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .hiw-icon {
+      width: 56px; height: 56px; margin: 0 auto 1.25rem;
+      border-radius: 14px; background: var(--accent-bg); border: 1px solid var(--accent-border);
+      display: flex; align-items: center; justify-content: center; color: var(--accent);
+    }
+    .hiw-icon .icon { width: 1.6rem; height: 1.6rem; }
+
+    .hiw-step h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: 0.5rem; }
+    .hiw-step p { font-size: 0.88rem; color: var(--muted); line-height: 1.7; max-width: 260px; margin: 0 auto; }
+
+    /* ── SPORTS COVERAGE ── */
+    #sports { background: var(--navy); }
+
+    .sports-pills {
+      display: flex; flex-wrap: wrap; gap: 0.875rem;
+    }
+
+    .sport-pill {
+      display: flex; align-items: center; gap: 0.6rem;
+      background: var(--navy3);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.875rem 1.25rem;
+      font-size: 0.9rem; font-weight: 500;
+      color: var(--muted);
+      transition: all 0.2s;
+    }
+
+    .sport-pill:hover {
+      border-color: var(--accent-border);
+      color: var(--text);
+      transform: translateY(-2px);
+    }
+
+    .sport-pill span { font-size: 1.2rem; }
+
+    /* ── IG SECTION ── */
+    #instagram { background: var(--navy2); }
+
+    .ig-cta-box {
+      background: linear-gradient(135deg, rgba(212,175,55,0.07) 0%, rgba(212,175,55,0.02) 100%);
+      border: 1px solid var(--accent-border);
+      border-radius: 14px;
+      padding: 3.5rem 2.5rem;
+      text-align: center;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+
+    .ig-icon {
+      width: 56px; height: 56px;
+      background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+      border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1.5rem;
+      font-size: 1.75rem;
+    }
+
+    .ig-cta-box h2 { margin-bottom: 0.75rem; }
+    .ig-cta-box p { color: var(--muted); margin-bottom: 2rem; max-width: 440px; margin-left: auto; margin-right: auto; }
+
+    .btn-ig {
+      background: linear-gradient(135deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+      color: #fff; font-weight: 700;
+      display: inline-flex; align-items: center; gap: 0.6rem;
+    }
+
+    .btn-ig:hover {
+      opacity: 0.9;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 28px rgba(220,39,67,0.35);
+    }
+
+    /* ── FINAL CTA ── */
+    #final-cta { background: var(--navy); }
+
+    .final-cta-box {
+      position: relative;
+      overflow: hidden;
+      background: linear-gradient(160deg, rgba(212,175,55,0.10) 0%, var(--navy3) 55%);
+      border: 1px solid var(--accent-border);
+      border-radius: 18px;
+      padding: 4rem 2.5rem;
+      text-align: center;
+      max-width: 780px;
+      margin: 0 auto;
+    }
+
+    .final-cta-eyebrow {
+      display: inline-flex; align-items: center; gap: 0.5rem;
+      color: var(--accent-deep);
+      font-weight: 700;
+      font-size: 0.8rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    .final-cta-box h2 {
+      font-size: 2rem;
+      max-width: 560px;
+      margin: 0 auto 0.9rem;
+      line-height: 1.25;
+    }
+
+    .final-cta-box p {
+      color: var(--muted);
+      max-width: 480px;
+      margin: 0 auto 2rem;
+    }
+
+    .final-cta-actions {
+      display: flex; flex-wrap: wrap; gap: 0.875rem;
+      justify-content: center;
+      margin-bottom: 1.5rem;
+    }
+
+    .final-cta-actions .btn-pkg-primary { width: auto; padding: 1rem 2rem; font-size: 1rem; }
+
+    .final-cta-note {
+      display: flex; flex-wrap: wrap; gap: 1.5rem;
+      justify-content: center;
+      font-size: 0.8rem;
+      color: var(--muted2);
+    }
+
+    .final-cta-note span { display: inline-flex; align-items: center; gap: 0.4rem; }
+    .final-cta-note .icon { width: 15px; height: 15px; color: var(--accent); flex-shrink: 0; }
+
+    @media (max-width: 640px) {
+      .final-cta-box { padding: 2.75rem 1.5rem; }
+      .final-cta-box h2 { font-size: 1.5rem; }
+      .final-cta-actions { flex-direction: column; }
+      .final-cta-actions .btn { width: 100%; justify-content: center; }
+    }
+
+    /* ── FOOTER ── */
+    footer {
+      background: var(--navy2);
+      border-top: 1px solid var(--border);
+    }
+
+    .footer-inner {
+      max-width: 1200px; margin: 0 auto;
+      padding: 3rem 5% 2rem;
+    }
+
+    .footer-top {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      flex-wrap: wrap; gap: 2rem;
+      margin-bottom: 2.5rem;
+      padding-bottom: 2.5rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .footer-brand .nav-logo { font-size: 1.05rem; margin-bottom: 0.75rem; }
+    .footer-brand p { font-size: 0.82rem; color: var(--muted); max-width: 260px; line-height: 1.65; }
+
+    .footer-links-col h4 {
+      font-size: 0.72rem; font-weight: 700;
+      color: var(--muted2); letter-spacing: 0.1em; text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+
+    .footer-links-col ul { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; }
+    .footer-links-col a { font-size: 0.875rem; color: var(--muted); transition: color 0.2s; }
+    .footer-links-col a:hover { color: var(--accent); }
+
+    .footer-bottom {
+      display: flex; justify-content: space-between; align-items: center;
+      flex-wrap: wrap; gap: 1rem;
+      font-size: 0.78rem; color: var(--muted2);
+    }
+
+    .disclaimer-block {
+      background: var(--navy);
+      border-top: 1px solid var(--border);
+      padding: 1.5rem 5%;
+    }
+
+    .disclaimer-block p {
+      max-width: 1000px; margin: 0 auto;
+      text-align: center;
+      font-size: 0.7rem; color: var(--muted2); line-height: 1.65; opacity: 0.7;
+    }
+
+    .disclaimer-block a { color: var(--muted); }
+
+    /* ── MOBILE NAV ── */
+    @media (max-width: 800px) {
+      .nav-links {
+        display: none; position: absolute; top: 68px; left: 0; right: 0;
+        flex-direction: column; gap: 0;
+        background: var(--navy2);
+        border-bottom: 1px solid var(--border);
+        padding: 0.5rem 0;
+      }
+      .nav-links.open { display: flex; }
+      .nav-links li { width: 100%; }
+      .nav-links a { display: block; padding: 0.875rem 5%; border-radius: 0; }
+      .burger { display: flex; }
+      .stats-inner { grid-template-columns: repeat(3, 1fr); }
+      .stat-cell:nth-child(4) { border-top: 1px solid var(--border); }
+      .stat-cell:nth-child(5) { border-top: 1px solid var(--border); border-right: none; }
+      .stat-cell:nth-child(3) { border-right: none; }
+    }
+
+    @media (max-width: 500px) {
+      .stats-inner { grid-template-columns: repeat(2, 1fr); }
+      .stat-cell:nth-child(2) { border-right: none; }
+      .stat-cell:nth-child(3) { border-top: 1px solid var(--border); }
+      .stat-cell:nth-child(4) { border-top: 1px solid var(--border); border-right: none; }
+      .stat-cell:nth-child(5) { border-top: 1px solid var(--border); }
+    }
+
+    /* ── SCROLL ANIMATIONS ── */
+    .fade-up {
+      opacity: 0; transform: translateY(24px);
+      transition: opacity 0.55s ease, transform 0.55s ease;
+    }
+    .fade-up.visible { opacity: 1; transform: translateY(0); }
+
+    /* ── WINS STRIP ── */
+    .wins-strip {
+      background: var(--navy2);
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .wins-track {
+      display: flex; gap: 1.25rem;
+      padding: 1rem 0;
+      animation: scroll-left 30s linear infinite;
+      width: max-content;
+    }
+    .wins-strip:hover .wins-track { animation-play-state: paused; }
+    @keyframes scroll-left {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+    .win-chip {
+      display: flex; align-items: center; gap: 0.6rem;
+      background: var(--navy3);
+      border: 1px solid var(--accent-border);
+      border-radius: 100px;
+      padding: 0.45rem 1.1rem;
+      white-space: nowrap;
+      font-size: 0.82rem; font-weight: 600;
+    }
+    .win-chip .amount { color: var(--accent); }
+    .win-chip .sport { color: var(--muted); font-weight: 400; }
+
+    /* ── MASONRY ── */
+    .masonry {
+      max-width: 1200px; margin: 0 auto;
+      columns: 3; column-gap: 1.25rem;
+    }
+    @media (max-width: 1024px) { .masonry { columns: 2; } }
+    @media (max-width: 600px) { .masonry { columns: 1; } }
+    .masonry-item { break-inside: avoid; margin-bottom: 1.25rem; }
+
+    /* ── DM CARDS ── */
+    .dm-card {
+      background: var(--navy3);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.5rem;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .dm-card:hover { border-color: var(--accent-border); transform: translateY(-2px); }
+    .dm-header { display: flex; align-items: center; gap: 0.65rem; margin-bottom: 1rem; }
+    .dm-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: var(--navy4); border: 1px solid var(--accent-border);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 0.8rem; font-weight: 700; color: var(--accent); flex-shrink: 0;
+    }
+    .dm-source { font-size: 0.75rem; color: var(--muted); font-weight: 500; }
+    .dm-ig-icon { margin-left: auto; color: var(--muted2); }
+    .dm-bubble {
+      background: var(--navy4);
+      border-radius: 18px 18px 18px 4px;
+      padding: 0.875rem 1.1rem;
+      font-size: 0.95rem; line-height: 1.6;
+      color: var(--text); display: inline-block; width: 100%;
+    }
+
+    /* ── WIN CARDS ── */
+    .win-card {
+      background: var(--navy3);
+      border: 1px solid var(--accent-border);
+      border-radius: 14px; padding: 1.5rem;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .win-card:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(212,175,55,0.08); }
+    .win-label {
+      font-size: 0.7rem; font-weight: 700;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 0.75rem;
+    }
+    .win-bet {
+      background: var(--navy4); border: 1px solid var(--border);
+      border-radius: 10px; padding: 1rem 1.1rem;
+      margin-bottom: 0.75rem; font-size: 0.85rem;
+    }
+    .win-bet-title { font-weight: 700; color: var(--text); margin-bottom: 0.2rem; }
+    .win-bet-sub { color: var(--muted); font-size: 0.78rem; margin-bottom: 0.6rem; }
+    .win-bet-legs { display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.78rem; color: var(--muted); }
+    .win-bet-legs span { display: flex; align-items: center; gap: 0.4rem; }
+    .win-bet-legs span::before { content: '✓'; color: var(--accent); font-weight: 700; font-size: 0.7rem; }
+    .win-payout {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-top: 0.875rem; padding-top: 0.875rem; border-top: 1px solid var(--border);
+    }
+    .win-payout-label { font-size: 0.78rem; color: var(--muted); }
+    .win-payout-amount { font-size: 1.6rem; font-weight: 800; color: var(--accent); letter-spacing: -0.03em; }
+    .win-reaction { margin-top: 0.75rem; }
+    .win-reaction .dm-bubble { font-size: 0.875rem; }
+
+    /* ── BIG QUOTE ── */
+    .big-quote-card {
+      background: linear-gradient(135deg, rgba(212,175,55,0.07) 0%, var(--navy3) 60%);
+      border: 1px solid var(--accent-border);
+      border-radius: 14px; padding: 2rem 1.75rem;
+      transition: transform 0.2s;
+    }
+    .big-quote-card:hover { transform: translateY(-2px); }
+    .big-quote-mark {
+      font-size: 3.5rem; line-height: 1;
+      color: var(--accent); opacity: 0.3;
+      font-family: Georgia, serif; margin-bottom: 0.5rem;
+    }
+    .big-quote-text {
+      font-size: 1.05rem; line-height: 1.7;
+      color: var(--text); font-style: italic; margin-bottom: 1.25rem;
+    }
+    .big-quote-source {
+      font-size: 0.78rem; color: var(--muted); font-style: normal;
+      display: flex; align-items: center; gap: 0.4rem;
+    }
+    .big-quote-source::before { content: ''; display: block; width: 20px; height: 1px; background: var(--muted2); }
+    /* ── RETURNS CALCULATOR ── */
+    .returns-calc {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 400;
+      background: var(--navy3);
+      border: 2px solid var(--accent);
+      border-radius: 16px;
+      padding: 1.5rem;
+      width: 290px;
+      box-shadow: 0 0 40px rgba(212,175,55,0.2);
+    }
+
+    .returns-calc-close {
+      position: absolute;
+      top: 0.75rem; right: 0.9rem;
+      background: none; border: none;
+      color: var(--muted); font-size: 1.3rem;
+      cursor: pointer; line-height: 1;
+      transition: color 0.2s;
+    }
+    .returns-calc-close:hover { color: var(--text); }
+
+    .returns-calc-title {
+      font-size: 0.8rem; font-weight: 800;
+      letter-spacing: 0.1em; text-transform: uppercase;
+      color: var(--text); margin-bottom: 1.25rem;
+      padding-right: 1.5rem;
+    }
+
+    .returns-calc-row {
+      display: flex; justify-content: space-between;
+      align-items: center; margin-bottom: 0.6rem;
+    }
+
+    .returns-calc-label { font-size: 0.78rem; color: var(--muted); }
+
+    .returns-calc-input-wrap {
+      display: flex; align-items: center; gap: 0.2rem;
+      background: var(--navy4);
+      border: 1px solid var(--border);
+      border-radius: 6px; padding: 0.3rem 0.6rem;
+      font-size: 0.9rem; font-weight: 600;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .returns-calc-input-wrap:focus-within {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px var(--accent-bg);
+    }
+
+    .returns-calc-input {
+      background: none; border: none;
+      color: var(--text); font-size: 0.9rem;
+      font-weight: 600; width: 65px;
+      outline: none; font-family: inherit;
+    }
+
+    .returns-calc-result {
+      font-size: 1.05rem; font-weight: 800; color: var(--accent);
+    }
+
+    .returns-calc-note {
+      font-size: 0.68rem; color: var(--muted2);
+      margin: 0.3rem 0 1rem; text-align: right;
+    }
+
+    .returns-calc-cta {
+      display: block; width: 100%;
+      text-align: center; padding: 0.7rem;
+      background: var(--accent); color: #000;
+      font-weight: 800; font-size: 0.85rem;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      border-radius: 8px; cursor: pointer;
+      transition: opacity 0.2s;
+    }
+    .returns-calc-cta:hover { opacity: 0.85; }
+
+    .returns-calc-fab {
+      display: none;
+      position: fixed;
+      bottom: 1rem; right: 1rem;
+      z-index: 400;
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      background: var(--accent);
+      border: none;
+      align-items: center; justify-content: center;
+      box-shadow: 0 4px 20px rgba(212,175,55,0.4);
+      cursor: pointer;
+      color: var(--navy);
+    }
+    .returns-calc-fab .icon { width: 1.4rem; height: 1.4rem; }
+    .returns-calc.calc-closed { display: none; }
+
+    /* ── RETURNS CALCULATOR: MOBILE ──
+       Collapsed to a small floating-action-button by default so it can
+       never cover stats, results, pricing or CTA buttons. Tapping the FAB
+       opens the full panel; tapping close returns it to the FAB state. */
+    @media (max-width: 480px) {
+      .returns-calc {
+        left: 1rem;
+        right: 1rem;
+        bottom: 1rem;
+        width: auto;
+        padding: 1.1rem;
+        display: none;
+      }
+      .returns-calc.calc-open { display: block; }
+      .returns-calc-fab { display: flex; }
+      .returns-calc-fab.calc-open { display: none; }
+    }
+
+    /* ── PERFORMANCE / ACCESSIBILITY: REDUCED MOTION ──
+       Respect the OS-level "reduce motion" setting: kill the infinite
+       marquee, the pulsing live-dot, and scroll-reveal transitions so
+       they don't spin the CPU or trigger vestibular discomfort. */
+    @media (prefers-reduced-motion: reduce) {
+      .wins-track { animation: none; }
+      .live-dot { animation: none; opacity: 1; }
+      .fade-up {
+        transition: none !important;
+        opacity: 1 !important;
+        transform: none !important;
+      }
+      * { scroll-behavior: auto !important; }
+    }
+
+    /* GPU-composited layers for the two continuously-animating elements
+       only (avoids paint/layout thrash without over-promoting the DOM). */
+    .wins-track, .live-dot { will-change: transform; }
+
+  </style>
+</head>
+<body>
+
+<!-- ICON SPRITE (line-icon set, replaces emoji) -->
+<svg style="display:none" aria-hidden="true">
+  <symbol id="ic-trending-up" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></symbol>
+  <symbol id="ic-bar-chart" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></symbol>
+  <symbol id="ic-dollar" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></symbol>
+  <symbol id="ic-gift" viewBox="0 0 24 24"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></symbol>
+  <symbol id="ic-message" viewBox="0 0 24 24"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></symbol>
+  <symbol id="ic-zap" viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
+  <symbol id="ic-shield" viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></symbol>
+  <symbol id="ic-trophy" viewBox="0 0 24 24"><path d="M8 21h8"/><path d="M12 17v4"/><path d="M7 4h10v4a5 5 0 0 1-10 0V4z"/><path d="M17 5h2a2 2 0 0 1 0 4h-2"/><path d="M7 5H5a2 2 0 0 0 0 4h2"/></symbol>
+  <symbol id="ic-card" viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/></symbol>
+  <symbol id="ic-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></symbol>
+  <symbol id="ic-flag" viewBox="0 0 24 24"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></symbol>
+  <symbol id="ic-oval-ball" viewBox="0 0 24 24"><ellipse cx="12" cy="12" rx="9" ry="6"/><line x1="5.5" y1="12" x2="18.5" y2="12"/><line x1="9" y1="9.3" x2="9" y2="14.7"/><line x1="12" y1="8.7" x2="12" y2="15.3"/><line x1="15" y1="9.3" x2="15" y2="14.7"/></symbol>
+  <symbol id="ic-soccer-ball" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><polygon points="12 7 15.5 9.5 14 13.5 10 13.5 8.5 9.5"/></symbol>
+  <symbol id="ic-basketball" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3v18"/><path d="M5.5 5.5c3 3 3 10 0 13"/><path d="M18.5 5.5c-3 3-3 10 0 13"/></symbol>
+  <symbol id="ic-tennis-ball" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M4 6c3 2 3 10 0 12"/><path d="M20 6c-3 2-3 10 0 12"/></symbol>
+  <symbol id="ic-cricket-bat" viewBox="0 0 24 24"><path d="M18 3l3 3-9 9-3-3z"/><path d="M9 12l-6 8 2 2 8-6"/></symbol>
+  <symbol id="ic-glove" viewBox="0 0 24 24"><path d="M7 12V7a3 3 0 0 1 6 0v1a2 2 0 0 1 4 0v1a2 2 0 0 1 3 2v3a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5v-2a2 2 0 0 1 3-2z"/></symbol>
+</svg>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="#hero" class="nav-logo">
+      <div class="logo-dot"></div>
+      PREEMIYUM<span>STATS</span>
+    </a>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#results">Results</a></li>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#packages">Packages</a></li>
+      <li><a href="#member-wins">Member Wins</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+    <div class="nav-right">
+      <!-- Instagram -->
+      <a href="https://www.instagram.com/preemiyumstats" target="_blank" class="nav-icon-link" title="Instagram" aria-label="Instagram">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+      </a>
+      <a href="https://www.instagram.com/preemiyumstats" target="_blank" class="btn-nav">Sign Up</a>
+      <div class="burger" onclick="toggleNav()"><span></span><span></span><span></span></div>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-bg"></div>
+  <div class="hero-grid-lines"></div>
+
+  <div class="hero-badge"><div class="live-dot"></div>Australia's Leading Sports Betting Tips</div>
+  <h1>Bet Smarter.<br><em>Win More.</em></h1>
+  <p class="hero-sub">Professional sports analysis and verified betting insights from Australia's most transparent handicapper. Every pick tracked. Every unit counted.</p>
+  <div class="hero-actions">
+    <a href="#packages" class="btn btn-primary">View Packages →</a>
+    <a href="#results" class="btn btn-ghost">Our Results ↓</a>
+  </div>
+  <p class="hero-results-link">Over <strong>40+ consecutive profitable months</strong> — <a href="#results">see our full record</a></p>
+</section>
+
+<!-- LIVE RESULTS TICKER -->
+<div class="wins-strip" style="margin:0;">
+  <div class="wins-track">
+    <div class="win-chip"><svg class="icon"><use href="#ic-oval-ball"/></svg> <span class="amount">+$518.18</span> <span class="sport">NRL SGM @ 1.72</span></div>
+    <div class="win-chip"><svg class="icon"><use href="#ic-oval-ball"/></svg> <span class="amount">+$155.00</span> <span class="sport">NRL SGM @ 3.10</span></div>
+    <div class="win-chip"><svg class="icon"><use href="#ic-oval-ball"/></svg> <span class="amount">+$103.64</span> <span class="sport">NRL SGM @ 1.72</span></div>
+    <div class="win-chip"><svg class="icon"><use href="#ic-soccer-ball"/></svg> <span class="amount">+$90.00</span> <span class="sport">Soccer SGM @ 1.80</span></div>
+    <div class="win-chip"><svg class="icon"><use href="#ic-soccer-ball"/></svg> <span class="amount">+5 units</span> <span class="sport">FIFA Day Sweep</span></div>
+    <div class="win-chip"><svg class="icon"><use href="#ic-dollar"/></svg> <span class="amount">+$450</span> <span class="sport">Member profit since joining</span></div>
+    <div class="win-chip"><svg class="icon"><use href="#ic-dollar"/></svg> <span class="amount">+$4,000</span> <span class="sport">Member profit in 2 weeks</span></div>
+    <div class="win-chip"><svg class="icon"><use href="#ic-soccer-ball"/></svg> <span class="amount">Mohamed Salah</span> <span class="sport">Anytime Scorer @ 2.20 ✓</span></div>
+    <div class="win-chip"><svg class="icon"><use href="#ic-target"/></svg> <span class="amount">+6 units</span> <span class="sport">Single day profit</span></div>
+    <div class="win-chip"><svg class="icon"><use href="#ic-oval-ball"/></svg> <span class="amount">+$518.18</span> <span class="sport">NRL SGM @ 1.72</span></div>
+    <div class="win-chip"><svg class="icon"><use href="#ic-oval-ball"/></svg> <span class="amount">+$155.00</span> <span class="sport">NRL SGM @ 3.10</span></div>
+    <div class="win-chip"><svg class="icon"><use href="#ic-oval-ball"/></svg> <span class="amount">+$103.64</span> <span class="sport">NRL SGM @ 1.72</span></div>
+    <div class="win-chip"><svg class="icon"><use href="#ic-soccer-ball"/></svg> <span class="amount">+$90.00</span> <span class="sport">Soccer SGM @ 1.80</span></div>
+    <div class="win-chip"><svg class="icon"><use href="#ic-soccer-ball"/></svg> <span class="amount">+5 units</span> <span class="sport">FIFA Day Sweep</span></div>
+    <div class="win-chip"><svg class="icon"><use href="#ic-dollar"/></svg> <span class="amount">+$450</span> <span class="sport">Member profit since joining</span></div>
+    <div class="win-chip"><svg class="icon"><use href="#ic-dollar"/></svg> <span class="amount">+$4,000</span> <span class="sport">Member profit in 2 weeks</span></div>
+    <div class="win-chip"><svg class="icon"><use href="#ic-soccer-ball"/></svg> <span class="amount">Mohamed Salah</span> <span class="sport">Anytime Scorer @ 2.20 ✓</span></div>
+    <div class="win-chip"><svg class="icon"><use href="#ic-target"/></svg> <span class="amount">+6 units</span> <span class="sport">Single day profit</span></div>
+  </div>
+</div>
+
+<!-- STATS BANNER -->
+<div class="stats-banner">
+  <div class="stats-inner">
+    <div class="stat-cell fade-up">
+      <div class="stat-val">72%</div>
+      <div class="stat-lbl">Strike Rate</div>
+    </div>
+    <div class="stat-cell fade-up">
+      <div class="stat-val">4,200+</div>
+      <div class="stat-lbl">Total Picks</div>
+    </div>
+    <div class="stat-cell fade-up">
+      <div class="stat-val">+1,765u</div>
+      <div class="stat-lbl">Units Profit</div>
+    </div>
+    <div class="stat-cell fade-up">
+      <div class="stat-val">40+</div>
+      <div class="stat-lbl">Profitable Months</div>
+    </div>
+    <div class="stat-cell fade-up">
+      <div class="stat-val">1K+</div>
+      <div class="stat-lbl">Active Members</div>
+    </div>
+  </div>
+</div>
+
+<!-- RESULTS -->
+<section id="results">
+  <div class="section-inner">
+    <div class="section-eyebrow">Verified Track Record</div>
+    <h2>Live Performance Results</h2>
+    <p class="section-lead">Full transparency. Every pick published in advance, every result logged. No cherry-picking, no excuses.</p>
+
+    <div class="results-grid">
+      <div class="result-card fade-up">
+        <div class="result-year">2023 Season  ·  1,068 picks</div>
+        <div class="result-profit">+412.11 UNITS</div>
+        <div class="result-desc">68% strike rate</div>
+        <div class="result-bar"><div class="result-bar-fill" style="width:68%"></div></div>
+      </div>
+      <div class="result-card fade-up">
+        <div class="result-year">2024 Season  ·  1,342 picks</div>
+        <div class="result-profit">+581.01 UNITS</div>
+        <div class="result-desc">71% strike rate</div>
+        <div class="result-bar"><div class="result-bar-fill" style="width:71%"></div></div>
+      </div>
+      <div class="result-card fade-up">
+        <div class="result-year">2025 Season  ·  1,306 picks</div>
+        <div class="result-profit">+462.00 UNITS</div>
+        <div class="result-desc">74% strike rate</div>
+        <div class="result-bar"><div class="result-bar-fill" style="width:74%"></div></div>
+      </div>
+      <div class="result-card fade-up" style="border-color: rgba(212,175,55,0.5);">
+        <div class="result-year" style="color:var(--accent); display:flex; align-items:center; gap:0.4rem;"><span class="live-dot"></span> LIVE — 2026 Season</div>
+        <div class="result-profit">+310.00 UNITS</div>
+        <div class="result-desc">76% strike rate  ·  season in progress</div>
+        <div class="result-bar"><div class="result-bar-fill" style="width:76%"></div></div>
+      </div>
+    </div>
+
+    <!-- SPORT TABS -->
+    <div class="sport-tabs-wrap fade-up">
+      <div class="tab-nav">
+        <button class="tab-btn active" onclick="switchTab(this,'all')">All Sports</button>
+        <button class="tab-btn" onclick="switchTab(this,'afl')">AFL</button>
+        <button class="tab-btn" onclick="switchTab(this,'nrl')">NRL</button>
+        <button class="tab-btn" onclick="switchTab(this,'racing')">Horse Racing</button>
+        <button class="tab-btn" onclick="switchTab(this,'nba')">NBA</button>
+        <button class="tab-btn" onclick="switchTab(this,'soccer')">Soccer</button>
+        <button class="tab-btn" onclick="switchTab(this,'tennis')">Tennis</button>
+      </div>
+
+      <!-- ALL -->
+      <div class="tab-panel active" id="tab-all">
+        <table class="perf-table">
+          <thead><tr>
+            <th>Period</th><th>Picks</th><th>W</th><th>L</th><th>Strike %</th><th>Units P/L</th>
+          </tr></thead>
+          <tbody>
+            <tr><td data-label="Period">2026 YTD</td><td data-label="Picks">590</td><td data-label="W">449</td><td data-label="L">141</td><td data-label="Strike %">76.1%</td><td class="profit" data-label="Units P/L">+310.00u</td></tr>
+            <tr><td data-label="Period">2025</td><td data-label="Picks">1306</td><td data-label="W">966</td><td data-label="L">340</td><td data-label="Strike %">74.0%</td><td class="profit" data-label="Units P/L">+462.00u</td></tr>
+            <tr><td data-label="Period">2024</td><td data-label="Picks">1342</td><td data-label="W">953</td><td data-label="L">389</td><td data-label="Strike %">71.0%</td><td class="profit" data-label="Units P/L">+581.01u</td></tr>
+            <tr><td data-label="Period">2023</td><td data-label="Picks">1068</td><td data-label="W">726</td><td data-label="L">342</td><td data-label="Strike %">68.0%</td><td class="profit" data-label="Units P/L">+412.11u</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- AFL -->
+      <div class="tab-panel" id="tab-afl">
+        <table class="perf-table">
+          <thead><tr>
+            <th>Period</th><th>Picks</th><th>W</th><th>L</th><th>Strike %</th><th>Units P/L</th>
+          </tr></thead>
+          <tbody>
+            <tr><td data-label="Period">2026 YTD</td><td data-label="Picks">64</td><td data-label="W">50</td><td data-label="L">14</td><td data-label="Strike %">78.1%</td><td class="profit" data-label="Units P/L">+46.0u</td></tr>
+            <tr><td data-label="Period">2025</td><td data-label="Picks">236</td><td data-label="W">176</td><td data-label="L">60</td><td data-label="Strike %">74.6%</td><td class="profit" data-label="Units P/L">+198.6u</td></tr>
+            <tr><td data-label="Period">2024</td><td data-label="Picks">244</td><td data-label="W">174</td><td data-label="L">70</td><td data-label="Strike %">71.3%</td><td class="profit" data-label="Units P/L">+253.9u</td></tr>
+            <tr><td data-label="Period">2023</td><td data-label="Picks">230</td><td data-label="W">156</td><td data-label="L">74</td><td data-label="Strike %">67.8%</td><td class="profit" data-label="Units P/L">+162.2u</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- NRL -->
+      <div class="tab-panel" id="tab-nrl">
+        <table class="perf-table">
+          <thead><tr>
+            <th>Period</th><th>Picks</th><th>W</th><th>L</th><th>Strike %</th><th>Units P/L</th>
+          </tr></thead>
+          <tbody>
+            <tr><td data-label="Period">2026 YTD</td><td data-label="Picks">56</td><td data-label="W">40</td><td data-label="L">16</td><td data-label="Strike %">71.4%</td><td class="profit" data-label="Units P/L">+64.0u</td></tr>
+            <tr><td data-label="Period">2025</td><td data-label="Picks">220</td><td data-label="W">158</td><td data-label="L">62</td><td data-label="Strike %">71.8%</td><td class="profit" data-label="Units P/L">+155.5u</td></tr>
+            <tr><td data-label="Period">2024</td><td data-label="Picks">228</td><td data-label="W">158</td><td data-label="L">70</td><td data-label="Strike %">69.3%</td><td class="profit" data-label="Units P/L">+167.2u</td></tr>
+            <tr><td data-label="Period">2023</td><td data-label="Picks">216</td><td data-label="W">148</td><td data-label="L">68</td><td data-label="Strike %">68.5%</td><td class="profit" data-label="Units P/L">+132.0u</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- HORSE RACING -->
+      <div class="tab-panel" id="tab-racing">
+        <table class="perf-table">
+          <thead><tr>
+            <th>Period</th><th>Picks</th><th>W</th><th>L</th><th>Strike %</th><th>Units P/L</th>
+          </tr></thead>
+          <tbody>
+            <tr><td data-label="Period">2026 YTD</td><td data-label="Picks">30</td><td data-label="W">24</td><td data-label="L">6</td><td data-label="Strike %">80.0%</td><td class="profit" data-label="Units P/L">+4.0u</td></tr>
+            <tr><td data-label="Period">2025</td><td data-label="Picks">216</td><td data-label="W">168</td><td data-label="L">48</td><td data-label="Strike %">77.8%</td><td class="profit" data-label="Units P/L">+87.2u</td></tr>
+            <tr><td data-label="Period">2024</td><td data-label="Picks">224</td><td data-label="W">168</td><td data-label="L">56</td><td data-label="Strike %">75.0%</td><td class="profit" data-label="Units P/L">+83.5u</td></tr>
+            <tr><td data-label="Period">2023</td><td data-label="Picks">208</td><td data-label="W">148</td><td data-label="L">60</td><td data-label="Strike %">71.2%</td><td class="profit" data-label="Units P/L">+74.4u</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- NBA -->
+      <div class="tab-panel" id="tab-nba">
+        <table class="perf-table">
+          <thead><tr>
+            <th>Period</th><th>Picks</th><th>W</th><th>L</th><th>Strike %</th><th>Units P/L</th>
+          </tr></thead>
+          <tbody>
+            <tr><td data-label="Period">2025-26</td><td data-label="Picks">432</td><td data-label="W">329</td><td data-label="L">103</td><td data-label="Strike %">76.2%</td><td class="profit" data-label="Units P/L">+80.0u</td></tr>
+            <tr><td data-label="Period">2024-25</td><td data-label="Picks">428</td><td data-label="W">305</td><td data-label="L">123</td><td data-label="Strike %">71.3%</td><td class="profit" data-label="Units P/L">+158.9u</td></tr>
+            <tr><td data-label="Period">2023-24</td><td data-label="Picks">414</td><td data-label="W">288</td><td data-label="L">126</td><td data-label="Strike %">69.6%</td><td class="profit" data-label="Units P/L">+152.3u</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- SOCCER -->
+      <div class="tab-panel" id="tab-soccer">
+        <table class="perf-table">
+          <thead><tr>
+            <th>Period</th><th>Picks</th><th>W</th><th>L</th><th>Strike %</th><th>Units P/L</th>
+          </tr></thead>
+          <tbody>
+            <tr><td data-label="Period">2026 YTD</td><td data-label="Picks">32</td><td data-label="W">21</td><td data-label="L">11</td><td data-label="Strike %">65.6%</td><td class="profit" data-label="Units P/L">+24.0u</td></tr>
+            <tr><td data-label="Period">2025</td><td data-label="Picks">206</td><td data-label="W">138</td><td data-label="L">68</td><td data-label="Strike %">67.0%</td><td class="profit" data-label="Units P/L">+21.6u</td></tr>
+            <tr><td data-label="Period">2024</td><td data-label="Picks">220</td><td data-label="W">152</td><td data-label="L">68</td><td data-label="Strike %">69.1%</td><td class="profit" data-label="Units P/L">+19.3u</td></tr>
+            <tr><td data-label="Period">2023</td><td data-label="Picks">210</td><td data-label="W">142</td><td data-label="L">68</td><td data-label="Strike %">67.6%</td><td class="profit" data-label="Units P/L">+16.1u</td></tr>
+          </tbody>
+        </table>
+      <!-- TENNIS -->
+      <div class="tab-panel" id="tab-tennis">
+        <table class="perf-table">
+          <thead><tr>
+            <th>Period</th><th>Picks</th><th>W</th><th>L</th><th>Strike %</th><th>Units P/L</th>
+          </tr></thead>
+          <tbody>
+            <tr><td data-label="Period">2026 YTD</td><td data-label="Picks">48</td><td data-label="W">31</td><td data-label="L">17</td><td data-label="Strike %">64.6%</td><td class="profit" data-label="Units P/L">+10.0u</td></tr>
+            <tr><td data-label="Period">2025</td><td data-label="Picks">214</td><td data-label="W">140</td><td data-label="L">74</td><td data-label="Strike %">65.4%</td><td class="profit" data-label="Units P/L">+42.3u</td></tr>
+            <tr><td data-label="Period">2024</td><td data-label="Picks">208</td><td data-label="W">136</td><td data-label="L">72</td><td data-label="Strike %">65.4%</td><td class="profit" data-label="Units P/L">+38.7u</td></tr>
+            <tr><td data-label="Period">2023</td><td data-label="Picks">200</td><td data-label="W">129</td><td data-label="L">71</td><td data-label="Strike %">64.5%</td><td class="profit" data-label="Units P/L">+31.2u</td></tr>
+          </tbody>
+        </table>
+      </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="section-inner">
+    <div class="section-eyebrow">Why Preemiyum Stats</div>
+    <h2>Everything You Need to Win</h2>
+    <p class="section-lead">We give our members a genuine, measurable edge — backed by data and verified results.</p>
+
+    <div class="features-grid">
+      <div class="feature-card fade-up">
+        <div class="feature-icon"><svg class="icon"><use href="#ic-trending-up"/></svg></div>
+        <h3>Expert Picks Daily</h3>
+        <p>Carefully researched selections across all major Australian and international sports — posted to our premium Instagram story every morning, with an instant notification the second it drops.</p>
+      </div>
+      <div class="feature-card fade-up">
+        <div class="feature-icon"><svg class="icon"><use href="#ic-bar-chart"/></svg></div>
+        <h3>Verified Track Record</h3>
+        <p>Every pick is logged before the game kicks off. Full transparency, publicly available. You'll always know exactly where you stand.</p>
+      </div>
+      <div class="feature-card fade-up">
+        <div class="feature-icon"><svg class="icon"><use href="#ic-dollar"/></svg></div>
+        <h3>Staking Strategies</h3>
+        <p>We don't just give you picks — we teach you how to size your bets correctly so you protect your bank and maximise returns long-term.</p>
+      </div>
+      <div class="feature-card fade-up">
+        <div class="feature-icon"><svg class="icon"><use href="#ic-gift"/></svg></div>
+        <h3>Member Giveaways</h3>
+        <p>Regular cash and merch giveaways exclusively for our active subscribers. Another way we reward loyalty in the Preemiyum community.</p>
+      </div>
+      <div class="feature-card fade-up">
+        <div class="feature-icon"><svg class="icon"><use href="#ic-message"/></svg></div>
+        <h3>Private Members Group</h3>
+        <p>Join a tight-knit community of serious punters. Discuss upcoming matches, share research, and get first access to line movement alerts.</p>
+      </div>
+      <div class="feature-card fade-up">
+        <div class="feature-icon"><svg class="icon"><use href="#ic-zap"/></svg></div>
+        <h3>Instant Alerts</h3>
+        <p>Real-time notifications the moment a high-value pick drops or a line moves significantly. Never miss an edge with our instant alert system.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how-it-works">
+  <div class="section-inner">
+    <div class="section-eyebrow">Getting Started</div>
+    <h2>How It Works</h2>
+    <p class="section-lead">From sign-up to your first tracked result, in three steps.</p>
+
+    <div class="hiw-grid">
+      <div class="hiw-step fade-up">
+        <div class="hiw-num">1</div>
+        <div class="hiw-icon"><svg class="icon"><use href="#ic-card"/></svg></div>
+        <h3>Join</h3>
+        <p>Pick Monthly or Lifetime and complete checkout — you're in the private members group within minutes.</p>
+      </div>
+      <div class="hiw-step fade-up">
+        <div class="hiw-num">2</div>
+        <div class="hiw-icon"><svg class="icon"><use href="#ic-message"/></svg></div>
+        <h3>Receive Picks</h3>
+        <p>Daily picks are posted to our premium Instagram story as soon as they're released — full reasoning included, not just the selection — and you're notified instantly the moment we post.</p>
+      </div>
+      <div class="hiw-step fade-up">
+        <div class="hiw-num">3</div>
+        <div class="hiw-icon"><svg class="icon"><use href="#ic-bar-chart"/></svg></div>
+        <h3>Track Results</h3>
+        <p>Every pick is logged publicly before the game starts. Follow your results against our full, unedited track record on this page.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SPORTS COVERAGE -->
+<section id="sports">
+  <div class="section-inner">
+    <div class="section-eyebrow">Coverage</div>
+    <h2>Sports We Cover</h2>
+    <p class="section-lead">All the major Australian and international markets you care about.</p>
+    <div class="sports-pills">
+      <div class="sport-pill"><span><svg class="icon"><use href="#ic-oval-ball"/></svg></span> AFL</div>
+      <div class="sport-pill"><span><svg class="icon"><use href="#ic-oval-ball"/></svg></span> NRL</div>
+      <div class="sport-pill"><span><svg class="icon"><use href="#ic-flag"/></svg></span> Horse Racing</div>
+      <div class="sport-pill"><span><svg class="icon"><use href="#ic-soccer-ball"/></svg></span> A-League &amp; EPL</div>
+      <div class="sport-pill"><span><svg class="icon"><use href="#ic-basketball"/></svg></span> NBA</div>
+      <div class="sport-pill"><span><svg class="icon"><use href="#ic-tennis-ball"/></svg></span> Tennis</div>
+      <div class="sport-pill"><span><svg class="icon"><use href="#ic-cricket-bat"/></svg></span> Cricket</div>
+      <div class="sport-pill"><span><svg class="icon"><use href="#ic-glove"/></svg></span> Boxing / MMA</div>
+      <div class="sport-pill"><span><svg class="icon"><use href="#ic-oval-ball"/></svg></span> NFL</div>
+    </div>
+  </div>
+</section>
+
+<!-- ACTIVITY STRIP -->
+<div class="section-inner" style="padding: 0 1.5rem;">
+  <div class="activity-strip fade-up">
+    <div class="live-dot"></div>
+    <span><strong>590 picks</strong> tracked so far in 2026</span>
+    <span class="dot-sep">·</span>
+    <span><strong>76.1%</strong> strike rate</span>
+    <span class="dot-sep">·</span>
+    <span><strong>+310.00u</strong> profit YTD</span>
+    <span class="dot-sep">·</span>
+    <a href="#results">see the full public record ↓</a>
+  </div>
+</div>
+
+<!-- PACKAGES -->
+<section id="packages">
+  <div class="section-inner">
+    <div class="section-eyebrow">Membership</div>
+    <h2>Choose Your Plan</h2>
+    <p class="section-lead">Two simple options. No fluff, no tiers. Just full access — your way.</p>
+
+    <div class="pkg-grid" style="max-width: 760px; margin: 0 auto; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+
+      <!-- MONTHLY -->
+      <div class="pkg-card fade-up">
+        <div class="pkg-tier">Monthly</div>
+        <div style="margin-top: 0.25rem;">
+          <div class="pkg-price"><sup>$</sup>120<span class="per">/month</span></div>
+        </div>
+        <p class="pkg-tagline">Full access, billed monthly. Cancel any time — no lock-in contracts.</p>
+        <ul class="pkg-list">
+          <li><span class="tick">✓</span> Daily tips across all sports</li>
+          <li><span class="tick">✓</span> AFL, NRL, horse racing, soccer &amp; more</li>
+          <li><span class="tick">✓</span> Weekly deep-dive analysis</li>
+          <li><span class="tick">✓</span> Best Bet of the Week</li>
+          <li><span class="tick">✓</span> Private members group access</li>
+          <li><span class="tick">✓</span> Instant story notifications the moment picks post</li>
+          <li><span class="tick">✓</span> Cancel any time</li>
+        </ul>
+        <a href="https://buy.stripe.com/00wbJ20gAeNxfXu1DU8IU1g" target="_blank" class="btn btn-pkg-primary" style="width:100%; justify-content:center; font-size:1rem; padding:1rem 2rem;">Subscribe Now →</a>
+      </div>
+
+      <!-- LIFETIME -->
+      <div class="pkg-card fade-up" style="border-color: var(--accent); background: linear-gradient(160deg, rgba(212,175,55,0.09) 0%, var(--navy3) 55%);">
+        <div class="pkg-popular-tag">Most Popular</div>
+        <div class="founding-badge" title="Lifetime members are locked in as Founding Members"><svg class="icon"><use href="#ic-trophy"/></svg><span>Founding Member</span></div>
+        <div class="pkg-tier" style="color: var(--accent); margin-top: 0.5rem;">Lifetime</div>
+        <div style="margin-top: 0.25rem;">
+          <div style="font-size: 0.85rem; color: var(--muted); text-decoration: line-through; margin-bottom: 0.1rem;">$1,999</div>
+          <div class="pkg-price"><sup>$</sup>399<span class="per"> one-time</span></div>
+          <div style="font-size: 0.8rem; color: var(--accent); font-weight: 600; margin-top: 0.2rem;">Save $1,500 — limited time offer</div>
+        </div>
+        <p class="pkg-tagline">Pay once and never think about it again. Full access to everything — for life.</p>
+        <ul class="pkg-list">
+          <li><span class="tick">✓</span> Everything in Monthly</li>
+          <li><span class="tick">✓</span> Lifetime access — no recurring fees</li>
+          <li><span class="tick">✓</span> All future upgrades included</li>
+          <li><span class="tick">✓</span> Founding member status</li>
+          <li><span class="tick">✓</span> Priority access to new services</li>
+          <li><span class="tick">✓</span> Permanent VIP community access</li>
+        </ul>
+        <a href="https://square.link/u/d8fXnWID" target="_blank" class="btn btn-pkg-primary" style="width:100%; justify-content:center; font-size:1rem; padding:1rem 2rem;">Get Lifetime Access →</a>
+        <div style="margin-top:0.75rem; padding:0.65rem 1rem; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:10px; text-align:center;">
+          <div style="font-size:0.72rem; color:var(--muted); font-weight:500; letter-spacing:0.04em; text-transform:uppercase; margin-bottom:0.45rem;">Buy Now, Pay Later — Available at Checkout</div>
+          <div style="display:flex; align-items:center; justify-content:center; gap:0.75rem; flex-wrap:wrap;">
+            <span style="display:inline-flex; align-items:center; gap:0.3rem; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:6px; padding:0.3rem 0.65rem; font-size:0.8rem; font-weight:700; color:var(--text); letter-spacing:0.01em;"><svg class="icon"><use href="#ic-card"/></svg> Afterpay</span>
+          </div>
+          <div style="font-size:0.72rem; color:var(--muted); margin-top:0.45rem;">Split your $399 into easy instalments — select Afterpay directly at checkout.</div>
+        </div>
+        <div style="margin-top:0.75rem; padding:0.75rem 1rem; background:rgba(212,175,55,0.07); border:1px solid rgba(212,175,55,0.2); border-radius:10px; text-align:left;">
+          <div style="font-size:0.85rem; color:var(--accent); font-weight:700; text-align:center;"><svg class="icon"><use href="#ic-shield"/></svg> 30-Day Profit Guarantee</div>
+          <div style="font-size:0.78rem; color:var(--muted); margin-top:0.4rem; text-align:center;">If your account isn't in profit after 30 days following our picks, we'll refund your membership.</div>
+          <button onclick="toggleGuarantee(this)" style="display:block; margin:0.5rem auto 0; background:none; border:none; color:var(--accent-deep); font-size:0.75rem; font-weight:600; text-decoration:underline; cursor:pointer;">View eligibility &amp; how to claim</button>
+          <div class="guarantee-details" style="display:none; margin-top:0.75rem; padding-top:0.75rem; border-top:1px solid rgba(212,175,55,0.2); font-size:0.76rem; color:var(--muted); line-height:1.7;">
+            <strong style="color:var(--text);">Eligibility:</strong> new Monthly and Lifetime members, for the first 30 days from your join date.<br>
+            <strong style="color:var(--text);">Measurement period:</strong> your results from your first tracked pick to day 30, measured against our publicly logged results on this page.<br>
+            <strong style="color:var(--text);">Stake sizing:</strong> results are assessed on a consistent 1 unit = 1–2% of bankroll stake across all picks in the period, per our published staking guidance — betting outside this range may affect eligibility.<br>
+            <strong style="color:var(--text);">How to claim:</strong> email <a href="mailto:preemiyumstats@gmail.com" style="color:var(--accent-deep);">preemiyumstats@gmail.com</a> within 7 days of your 30-day mark with your join date and bet history; approved refunds are processed to your original payment method within 5 business days.
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- TRUST BAR -->
+    <div class="trust-bar fade-up">
+      <div class="trust-item"><svg class="icon"><use href="#ic-shield"/></svg> ABN Registered Business</div>
+      <div class="trust-item"><svg class="icon"><use href="#ic-flag"/></svg> Australian Owned &amp; Operated</div>
+      <div class="trust-item"><svg class="icon"><use href="#ic-card"/></svg> Secure Checkout</div>
+      <div class="trust-item"><svg class="icon"><use href="#ic-trophy"/></svg> 30-Day Profit Guarantee</div>
+      <div class="trust-item"><svg class="icon"><use href="#ic-message"/></svg> Responsible Gambling Support</div>
+    </div>
+
+    <p class="pkg-note">All prices in AUD. Monthly processed securely via Stripe · Lifetime processed securely via Square.</p>
+  </div>
+</section>
+
+<!-- PLAN COMPARISON -->
+<section id="compare">
+  <div class="section-inner">
+    <div class="section-eyebrow">Side by Side</div>
+    <h2>Which Plan Makes Sense for You?</h2>
+    <p class="section-lead">If you're planning to stay longer than about 3 months, Lifetime is the cheaper option — and it only gets better in year two.</p>
+
+    <div style="overflow-x:auto;">
+      <table class="compare-table">
+        <thead>
+          <tr><th>Monthly</th><th>Lifetime</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>Price</td><td>$120/month</td><td class="col-lifetime">$399 one-time</td></tr>
+          <tr><td>Cost in year 1</td><td>$1,440</td><td class="col-lifetime">$399</td></tr>
+          <tr><td>Cost in year 3</td><td>$4,320</td><td class="col-lifetime">$399</td></tr>
+          <tr><td>Ongoing fees after joining</td><td class="no">Recurring forever</td><td class="col-lifetime yes">None, ever</td></tr>
+          <tr><td>Founding member status</td><td class="no">—</td><td class="col-lifetime yes">✓</td></tr>
+          <tr><td>Priority access to new features</td><td class="no">—</td><td class="col-lifetime yes">✓</td></tr>
+          <tr><td>Cancel any time, no lock-in</td><td class="yes">✓</td><td class="col-lifetime">N/A — nothing to cancel</td></tr>
+          <tr><td>Best for</td><td>Trying it out first</td><td class="col-lifetime">Members planning to stay</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- QUICK FAQ UNDER PRICING -->
+<section id="quick-faq">
+  <div class="section-inner">
+    <div class="section-eyebrow">Before You Join</div>
+    <h2>Quick Questions</h2>
+    <div class="quick-faq-list">
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Is the Lifetime price really a one-time payment?
+          <span class="faq-chevron">+</span>
+        </button>
+        <div class="faq-a">Yes. Pay once through Square at checkout and you're in — no subscription, no recurring charges, ever.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          What if I don't profit in the first 30 days?
+          <span class="faq-chevron">+</span>
+        </button>
+        <div class="faq-a">You're covered by our 30-Day Profit Guarantee — see the eligibility details and how to claim it above, in the pricing section.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Can I upgrade from Monthly to Lifetime later?
+          <span class="faq-chevron">+</span>
+        </button>
+        <div class="faq-a">Yes — message us any time and we'll help you move across to Lifetime.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testimonials">
+  <div class="section-inner">
+    <div class="section-eyebrow">Member Results</div>
+    <h2>Trusted by Punters Across Australia</h2>
+    <p class="section-lead">Real members. Real results. Zero fabrications.</p>
+
+    <div class="testi-grid">
+      <div class="testi-card fade-up">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"Been following Preemiyum Stats for over a year. The AFL analysis is genuinely next level and the transparency around results is what makes them stand out from every other service I've tried."</p>
+        <div class="testi-author">
+          <div class="testi-ava">JM</div>
+          <div><div class="testi-name">Jake M.</div><div class="testi-loc">Melbourne, VIC · Member</div></div>
+        </div>
+      </div>
+      <div class="testi-card fade-up">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"Worth every cent. I've turned my betting from a losing hobby into a profitable sideline. Horse racing tips alone covered my subscription 3x over."</p>
+        <div class="testi-author">
+          <div class="testi-ava">SR</div>
+          <div><div class="testi-name">Samantha R.</div><div class="testi-loc">Brisbane, QLD · Member</div></div>
+        </div>
+      </div>
+      <div class="testi-card fade-up">
+        <div class="testi-stars">★★★★★</div>
+        <p class="testi-text">"Love how every stat is backed up. No guesswork, pure data. The private group is super active too — easily the best community of punters I've found in Australia."</p>
+        <div class="testi-author">
+          <div class="testi-ava">DK</div>
+          <div><div class="testi-name">Dylan K.</div><div class="testi-loc">Sydney, NSW · Member</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MEMBER WINS -->
+<section id="member-wins" style="padding: 90px 0;">
+  <div style="padding: 0 5%; max-width: 1200px; margin: 0 auto 2.5rem;">
+    <div class="section-eyebrow">Member Feedback</div>
+    <h2>Straight from the DMs</h2>
+    <p class="section-lead">Unfiltered messages and verified wins from real Preemiyum Stats members. No fabrications.</p>
+    <p style="font-size:0.78rem;color:var(--muted2);max-width:640px;">Individual results are not typical and are not a guarantee of future performance — betting always carries risk of loss. See our full, unedited results table above for the real picture.</p>
+  </div>
+
+
+  <div class="masonry" style="padding: 2.5rem 5% 0;">
+
+    <div class="masonry-item fade-up">
+      <div class="win-card">
+        <div class="win-label"><svg class="icon"><use href="#ic-trophy"/></svg> Lifetime Member Win · NRL Same Game Multis</div>
+        <div class="win-bet">
+          <div class="win-bet-title">Same Game Multi @ 3.10 · 2 Legs</div>
+          <div class="win-bet-sub">NSW v QLD · Stake $50.00</div>
+          <div class="win-bet-legs"><span>Leg 1 ✓</span><span>Leg 2 ✓</span></div>
+          <div class="win-payout"><span class="win-payout-label">Payout</span><span class="win-payout-amount">+$155.00</span></div>
+        </div>
+        <div class="win-bet">
+          <div class="win-bet-title">Same Game Multi @ 1.72 · 2 Legs</div>
+          <div class="win-bet-sub">NSW v QLD · Stake $300.00</div>
+          <div class="win-bet-legs"><span>Leg 1 ✓</span><span>Leg 2 ✓</span></div>
+          <div class="win-payout"><span class="win-payout-label">Payout</span><span class="win-payout-amount">+$518.18</span></div>
+        </div>
+        <div class="win-reaction"><div class="dm-bubble">"Ay bro u made me win too much they promo banned me 🤣🤣"</div></div>
+        <div style="margin-top:0.6rem;font-size:0.72rem;color:var(--muted);padding-left:0.25rem;">— Richie · Instagram DM</div>
+      </div>
+    </div>
+
+    <div class="masonry-item fade-up">
+      <div class="big-quote-card">
+        <div class="big-quote-mark">"</div>
+        <p class="big-quote-text">Yo bro this has been a week. Reckon I'm up about 4 grand in the last two weeks mostly from your picks. Let's keep going! You're on fire.</p>
+        <div class="big-quote-source">Instagram DM · Lifetime Member</div>
+      </div>
+    </div>
+
+    <div class="masonry-item fade-up">
+      <div class="dm-card">
+        <div class="dm-header">
+          <div class="dm-avatar">IG</div>
+          <span class="dm-source">Instagram DM · Member</span>
+          <span class="dm-ig-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></span>
+        </div>
+        <div class="dm-bubble">"Suffering from success. Keep up the plays broski 💪"</div>
+      </div>
+    </div>
+
+    <div class="masonry-item fade-up">
+      <div class="dm-card">
+        <div class="dm-header"><div class="dm-avatar">IG</div><span class="dm-source">Instagram DM · Member</span></div>
+        <div class="dm-bubble">"Yessir +6 units LESGOO baby crazy momentum rn"</div>
+      </div>
+    </div>
+
+    <div class="masonry-item fade-up">
+      <div class="win-card">
+        <div class="win-label"><svg class="icon"><use href="#ic-trophy"/></svg> Lifetime Member Win · NRL</div>
+        <div class="win-bet">
+          <div class="win-bet-title">Same Game Multi @ 1.72 · 2 Legs</div>
+          <div class="win-bet-sub">NSW v QLD · Stake $60.00</div>
+          <div class="win-bet-legs"><span>Leg 1 ✓</span><span>Leg 2 ✓</span></div>
+          <div class="win-payout"><span class="win-payout-label">Payout</span><span class="win-payout-amount">+$103.64</span></div>
+        </div>
+        <div class="win-reaction"><div class="dm-bubble">"BANNGGGGG BROTHER YOUR THE GOAT, premium eating tonight!"</div></div>
+        <div style="margin-top:0.6rem;font-size:0.72rem;color:var(--muted);padding-left:0.25rem;">— Instagram DM · Lifetime Member</div>
+      </div>
+    </div>
+
+    <div class="masonry-item fade-up">
+      <div class="big-quote-card">
+        <div class="big-quote-mark">"</div>
+        <p class="big-quote-text">I'm a first year apprentice and you've genuinely helped me out so much man, words can't explain how much you've helped me since I've joined. I'm genuinely grateful for you bro 🖤</p>
+        <div class="big-quote-source">Instagram DM · Lifetime Member</div>
+      </div>
+    </div>
+
+    <div class="masonry-item fade-up">
+      <div class="dm-card">
+        <div class="dm-header"><div class="dm-avatar">IG</div><span class="dm-source">Instagram DM · Member</span></div>
+        <div class="dm-bubble">"joined the premium yesterday and have already made my money back 🐐"</div>
+      </div>
+    </div>
+
+    <div class="masonry-item fade-up">
+      <div class="win-card">
+        <div class="win-label"><svg class="icon"><use href="#ic-soccer-ball"/></svg> Lifetime Member Win · FIFA World Cup</div>
+        <div class="win-bet">
+          <div class="win-bet-title">Same Game Multi @ 1.72 · 3 Legs</div>
+          <div class="win-bet-sub">New Zealand v Egypt · Mon 22 Jun</div>
+          <div class="win-bet-legs"><span>Under 4.5 Goals ✓</span><span>Over 1.5 Goals ✓</span><span>Egypt And Draw (Double Chance) ✓</span></div>
+        </div>
+        <div class="win-bet">
+          <div class="win-bet-title">Anytime Goalscorer @ 2.20</div>
+          <div class="win-bet-sub">New Zealand v Egypt</div>
+          <div class="win-bet-legs"><span>Mohamed Salah — Anytime Scorer ✓</span></div>
+        </div>
+        <div style="margin-top:0.875rem;padding-top:0.875rem;border-top:1px solid var(--border);">
+          <div style="font-size:0.75rem;color:var(--muted);margin-bottom:0.3rem;">Day result</div>
+          <div style="font-size:1.4rem;font-weight:800;color:var(--accent);">+5 units</div>
+          <div style="font-size:0.75rem;color:var(--muted);margin-top:0.15rem;">2 days in a row sweep</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="masonry-item fade-up">
+      <div class="dm-card">
+        <div class="dm-header"><div class="dm-avatar">IG</div><span class="dm-source">Instagram DM · Member</span></div>
+        <div class="dm-bubble">"ur the goat man i was questioning a couple calls but they all hit 🔥"</div>
+      </div>
+    </div>
+
+    <div class="masonry-item fade-up">
+      <div class="dm-card">
+        <div class="dm-header"><div class="dm-avatar">IG</div><span class="dm-source">Instagram DM · Member</span></div>
+        <div class="dm-bubble">"Bro not trying to glaze but already cashed up $450 since I've joined lol 😂😂"</div>
+      </div>
+    </div>
+
+    <div class="masonry-item fade-up">
+      <div class="win-card">
+        <div class="win-label"><svg class="icon"><use href="#ic-soccer-ball"/></svg> Lifetime Member Win · Soccer SGM</div>
+        <div class="win-bet">
+          <div class="win-bet-title">Same Game Multi @ 1.80 · 2 Legs</div>
+          <div class="win-bet-sub">Argentina v Austria · Stake $50.00</div>
+          <div class="win-bet-legs"><span>Over 1.5 Goals ✓</span><span>Argentina Win-Draw-Win ✓</span></div>
+          <div class="win-payout"><span class="win-payout-label">Payout</span><span class="win-payout-amount">+$90.00</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="masonry-item fade-up">
+      <div class="dm-card">
+        <div class="dm-header"><div class="dm-avatar">IG</div><span class="dm-source">Instagram DM · Member</span></div>
+        <div class="dm-bubble">"the goat 🐐 what a day lesgooo 👊🤝"</div>
+      </div>
+    </div>
+
+    <div class="masonry-item fade-up">
+      <div class="dm-card">
+        <div class="dm-header"><div class="dm-avatar">IG</div><span class="dm-source">Story Reply · Member</span></div>
+        <div class="dm-bubble">"7 MINUTES IN BEAUTY 🔥" <span style="display:block;font-size:0.75rem;color:var(--muted);margin-top:0.4rem;">Replied to a FIFA picks story — all legs hit within 7 minutes</span></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- REFER & EARN -->
+<section id="referral">
+  <div class="section-inner" style="text-align:center; max-width:640px;">
+    <div class="referral-icon"><svg class="icon" width="26" height="26"><use href="#ic-gift"/></svg></div>
+    <div class="section-eyebrow">Refer &amp; Earn</div>
+    <h2>Know Someone Who'd Love This?</h2>
+    <p class="section-lead">Send a mate our way. Once they join, DM us both on Instagram and we'll personally sort out a thank-you for the referral — every one is handled individually, not by an automated code.</p>
+    <a href="https://www.instagram.com/preemiyumstats" target="_blank" class="btn btn-primary">Message Us to Refer a Friend →</a>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="section-inner">
+    <div class="section-eyebrow">FAQ</div>
+    <h2>Common Questions</h2>
+    <p class="section-lead">Everything you need to know before joining.</p>
+
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          How do I receive the tips?
+          <span class="faq-chevron">+</span>
+        </button>
+        <div class="faq-a">All picks are posted to our premium Instagram story. Once you subscribe, you'll get an instant notification the moment a new pick goes live, so you never miss one.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Are your results independently verified?
+          <span class="faq-chevron">+</span>
+        </button>
+        <div class="faq-a">Yes — every pick is published publicly on our Instagram before the game starts, creating a timestamped, unalterable record. Our full results table on this page reflects exactly that record.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          What unit size do you recommend?
+          <span class="faq-chevron">+</span>
+        </button>
+        <div class="faq-a">We recommend treating 1 unit as 1–2% of your total betting bank. This keeps your downside controlled during any losing run while still generating meaningful returns during hot streaks. Our Pro and Elite members get personalised bankroll advice.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Can I cancel my subscription at any time?
+          <span class="faq-chevron">+</span>
+        </button>
+        <div class="faq-a">Absolutely. There are no lock-in contracts. You can cancel any time and your access continues until the end of your current billing period. Just DM us and we'll handle it immediately.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          I'm new to sports betting — is this right for me?
+          <span class="faq-chevron">+</span>
+        </button>
+        <div class="faq-a">Definitely. We cater to punters at all experience levels. Our Starter package is a great entry point, and all our tips come with clear explanations so you understand the reasoning behind each pick — not just the selection itself.</div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" onclick="toggleFaq(this)">
+          Which bookmakers do you recommend in Australia?
+          <span class="faq-chevron">+</span>
+        </button>
+        <div class="faq-a">Our tips work across all major Australian bookmakers including Sportsbet, TAB, Ladbrokes, Neds, and Pointsbet. We always recommend shopping around for the best available price before placing any bet.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INSTAGRAM CTA -->
+<section id="instagram">
+  <div class="section-inner">
+    <div class="ig-cta-box fade-up">
+      <div class="ig-icon">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="white"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+      </div>
+      <h2>Follow Us on Instagram</h2>
+      <p>Get free picks, live updates, and behind-the-scenes analysis from @preemiyumstats. Join thousands of Australian punters already following along.</p>
+      <a href="https://www.instagram.com/preemiyumstats" target="_blank" class="btn btn-ig">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+        @preemiyumstats
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<section id="final-cta">
+  <div class="section-inner">
+    <div class="final-cta-box fade-up">
+      <div class="final-cta-eyebrow"><svg class="icon" width="14" height="14"><use href="#ic-flag"/></svg> Founding Member Pricing</div>
+      <h2>Stop guessing. Start betting on verified, timestamped analysis.</h2>
+      <p>Join as a Lifetime Member today — one payment, no renewals, and every pick we've ever posted is on this page for you to check yourself.</p>
+      <div class="final-cta-actions">
+        <a href="https://square.link/u/d8fXnWID" target="_blank" class="btn btn-pkg-primary">Get Lifetime Access →</a>
+        <a href="#packages" class="btn btn-ghost">Compare Plans</a>
+      </div>
+      <div class="final-cta-note">
+        <span><svg class="icon" width="15" height="15"><use href="#ic-dollar"/></svg> One-time payment</span>
+        <span><svg class="icon" width="15" height="15"><use href="#ic-zap"/></svg> Instant access</span>
+        <span><svg class="icon" width="15" height="15"><use href="#ic-shield"/></svg> 30-day profit guarantee</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <a href="#hero" class="nav-logo" style="margin-bottom:0.75rem; display:flex;">
+          <div class="logo-dot"></div>
+          PREEMIYUM<span>STATS</span>
+        </a>
+        <p>Australia's most transparent sports betting analysis service. Verified picks, real results, and genuine community.</p>
+      </div>
+      <div class="footer-links-col">
+        <h4>Navigation</h4>
+        <ul>
+          <li><a href="#results">Results</a></li>
+          <li><a href="#features">Features</a></li>
+          <li><a href="#packages">Packages</a></li>
+          <li><a href="#member-wins">Member Wins</a></li>
+          <li><a href="#faq">FAQ</a></li>
+        </ul>
+      </div>
+      <div class="footer-links-col">
+        <h4>Connect</h4>
+        <ul>
+          <li><a href="https://www.instagram.com/preemiyumstats" target="_blank">Instagram</a></li>
+          <li><a href="https://www.tiktok.com/@preemiyumstats" target="_blank">TikTok</a></li>
+          <li><a href="mailto:preemiyumstats@gmail.com">Email Us</a></li>
+        </ul>
+      </div>
+      <div class="footer-links-col">
+        <h4>Responsible Gambling</h4>
+        <ul>
+          <li><a href="https://www.gamblinghelponline.org.au" target="_blank">Gambling Help Online</a></li>
+          <li><a href="tel:1800858858">1800 858 858</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Preemiyum Stats. All rights reserved.</span>
+      <span>ABN · Sydney, Australia</span>
+    </div>
+  </div>
+</footer>
+
+<div class="disclaimer-block">
+  <p>
+    Gambling can be addictive — please bet responsibly. Preemiyum Stats provides analysis and commentary for informational purposes only and does not guarantee any returns. Past performance is not indicative of future results. You must be 18 years or older to gamble in Australia. If gambling is having a negative impact on your life, call Gambling Help Online on <a href="tel:1800858858">1800 858 858</a> or visit <a href="https://www.gamblinghelponline.org.au" target="_blank">gamblinghelponline.org.au</a>.
+  </p>
+</div>
+
+<script>
+  // Nav toggle
+  function toggleNav() {
+    document.getElementById('navLinks').classList.toggle('open');
+  }
+  document.querySelectorAll('.nav-links a').forEach(a => {
+    a.addEventListener('click', () => document.getElementById('navLinks').classList.remove('open'));
+  });
+
+  // Sport tabs
+  function switchTab(btn, id) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + id).classList.add('active');
+  }
+
+  // FAQ accordion
+  function toggleFaq(btn) {
+    const item = btn.parentElement;
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+  }
+
+  function toggleGuarantee(btn) {
+    const details = btn.nextElementSibling;
+    const isOpen = details.style.display === 'block';
+    details.style.display = isOpen ? 'none' : 'block';
+    btn.textContent = isOpen ? 'View eligibility & how to claim' : 'Hide details';
+  }
+
+  // Scroll fade-in
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        observer.unobserve(e.target);
+      }
+    });
+  }, { threshold: 0.1 });
+
+  document.querySelectorAll('.fade-up').forEach((el, i) => {
+    el.style.transitionDelay = (i % 4 * 80) + 'ms';
+    observer.observe(el);
+  });
+
+  function calcReturns() {
+    const unit = parseFloat(document.getElementById('unitSize').value) || 0;
+    const avgUnits = 485;
+    const returns = (unit * avgUnits).toLocaleString('en-AU', {
+      style: 'currency', currency: 'AUD',
+      minimumFractionDigits: 0, maximumFractionDigits: 0
+    });
+    document.getElementById('calcResult').textContent = returns + '*';
+  }
+
+  // Mobile: collapse the calculator to a FAB so it never covers page content
+  function toggleCalc(open) {
+    document.getElementById('returnsCalc').classList.toggle('calc-open', open);
+    document.getElementById('returnsCalc').classList.toggle('calc-closed', !open);
+    document.getElementById('returnsCalcFab').classList.toggle('calc-open', open);
+  }
+</script>
+
+<!-- RETURNS CALCULATOR WIDGET -->
+<button class="returns-calc-fab" id="returnsCalcFab" onclick="toggleCalc(true)" aria-label="Open annual returns calculator">
+  <svg class="icon"><use href="#ic-trending-up"/></svg>
+</button>
+<div class="returns-calc" id="returnsCalc">
+  <button class="returns-calc-close" onclick="toggleCalc(false)" aria-label="Close annual returns calculator">×</button>
+  <div class="returns-calc-title">Annual Returns Calculator</div>
+  <div class="returns-calc-row">
+    <label class="returns-calc-label" for="unitSize">Unit size:</label>
+    <div class="returns-calc-input-wrap">
+      <span style="color:var(--muted)">$</span>
+      <input type="number" class="returns-calc-input" id="unitSize" value="100" min="1" aria-label="Unit size in AUD dollars" oninput="calcReturns()">
+    </div>
+  </div>
+  <div class="returns-calc-row">
+    <div class="returns-calc-label">Est. annual returns:</div>
+    <div class="returns-calc-result" id="calcResult">$48,500*</div>
+  </div>
+  <div class="returns-calc-note">*Based on our 3-year avg of 485u/year</div>
+  <a href="#packages" class="returns-calc-cta">SIGN UP NOW</a>
+</div>
+
+</body>
+</html>
