@@ -2290,20 +2290,17 @@
   <a href="#packages" class="returns-calc-cta">See Membership Options</a>
 </div>
 
-  <script>
+<script>
 // Initialize referral tracking from URL
 const params = new URLSearchParams(window.location.search)
 const refCode = params.get('ref')
 if (refCode) localStorage.setItem('preemiyum_referral_code', refCode)
 
-// Handle checkout with referral code
+// Handle checkout with referral tracking
 function handleCheckout(plan) {
-  const referralCode = localStorage.getItem('preemiyum_referral_code')
-  let url = plan === 'monthly' 
-    ? 'https://buy.stripe.com/0Meb2J@g0ehYcfu10U8IUg'
-    : 'https://square.link/u/d8fXwuiD'
-  if (referralCode) url += `?ref=${encodeURIComponent(referralCode)}`
-  window.location.href = url
+  const referralCode = localStorage.getItem('preemiyum_referral_code') || 'direct'
+  const checkoutUrl = `https://preemiyum-redesign.vercel.app/api/checkout/redirect?plan=${plan}&ref=${encodeURIComponent(referralCode)}`
+  window.location.href = checkoutUrl
 }
 </script>
 </body>
