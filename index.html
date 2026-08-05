@@ -1741,8 +1741,7 @@
           <li><span class="tick">✓</span> Instant story notifications the moment picks post</li>
           <li><span class="tick">✓</span> Cancel any time</li>
         </ul>
-        <a href="https://buy.stripe.com/00wbJ20gAeNxfXu1DU8IU1g" target="_blank" class="btn btn-pkg-primary" style="width:100%; justify-content:center; font-size:1rem; padding:1rem 2rem;">Subscribe Now →</a>
-      </div>
+<button onclick="handleCheckout('monthly')" class="btn btn-pkg-primary" style="width:100%; justify-content:center; font-size:1rem; padding:1rem 2rem; border:none; cursor:pointer;">Subscribe Now →</button>      </div>
 
       <!-- LIFETIME -->
       <div class="pkg-card fade-up" style="border-color: var(--accent); background: linear-gradient(160deg, rgba(212,175,55,0.09) 0%, var(--navy3) 55%);">
@@ -1763,8 +1762,7 @@
           <li><span class="tick">✓</span> Priority access to new services</li>
           <li><span class="tick">✓</span> Permanent VIP community access</li>
         </ul>
-        <a href="https://square.link/u/d8fXnWID" target="_blank" class="btn btn-pkg-primary" style="width:100%; justify-content:center; font-size:1rem; padding:1rem 2rem;">Get Lifetime Access →</a>
-        <div style="margin-top:0.75rem; padding:0.65rem 1rem; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:10px; text-align:center;">
+<button onclick="handleCheckout('lifetime')" class="btn btn-pkg-primary" style="width:100%; justify-content:center; font-size:1rem; padding:1rem 2rem; border:none; cursor:pointer;">Get Lifetime Access →</button>        <div style="margin-top:0.75rem; padding:0.65rem 1rem; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.08); border-radius:10px; text-align:center;">
           <div style="font-size:0.72rem; color:var(--muted); font-weight:500; letter-spacing:0.04em; text-transform:uppercase; margin-bottom:0.45rem;">Buy Now, Pay Later — Available at Checkout</div>
           <div style="display:flex; align-items:center; justify-content:center; gap:0.75rem; flex-wrap:wrap;">
             <span style="display:inline-flex; align-items:center; gap:0.3rem; background:rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1); border-radius:6px; padding:0.3rem 0.65rem; font-size:0.8rem; font-weight:700; color:var(--text); letter-spacing:0.01em;"><svg class="icon"><use href="#ic-card"/></svg> Afterpay</span>
@@ -2292,5 +2290,21 @@
   <a href="#packages" class="returns-calc-cta">See Membership Options</a>
 </div>
 
+  <script>
+// Initialize referral tracking from URL
+const params = new URLSearchParams(window.location.search)
+const refCode = params.get('ref')
+if (refCode) localStorage.setItem('preemiyum_referral_code', refCode)
+
+// Handle checkout with referral code
+function handleCheckout(plan) {
+  const referralCode = localStorage.getItem('preemiyum_referral_code')
+  let url = plan === 'monthly' 
+    ? 'https://buy.stripe.com/0Meb2J@g0ehYcfu10U8IUg'
+    : 'https://square.link/u/d8fXwuiD'
+  if (referralCode) url += `?ref=${encodeURIComponent(referralCode)}`
+  window.location.href = url
+}
+</script>
 </body>
 </html>
