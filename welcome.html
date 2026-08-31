@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Welcome to Preemiyum</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <style>
+    :root {
+      --navy: #07111f;
+      --navy2: #0d1d33;
+      --gold: #c9a24b;
+      --text: #f7f9fc;
+      --muted: #aeb9c9;
+      --line: rgba(255,255,255,.12);
+      --green: #46d17a;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #10284a 0%, var(--navy) 45%, #050a11 100%);
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 28px 18px;
+    }
+    .card {
+      width: 100%;
+      max-width: 720px;
+      background: rgba(8, 18, 32, .92);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 34px;
+      box-shadow: 0 24px 80px rgba(0,0,0,.35);
+    }
+    .brand {
+      font-size: 13px;
+      letter-spacing: .32em;
+      color: var(--gold);
+      font-weight: 800;
+      margin-bottom: 18px;
+    }
+    .success {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--green);
+      font-weight: 800;
+      background: rgba(70,209,122,.09);
+      border: 1px solid rgba(70,209,122,.22);
+      border-radius: 999px;
+      padding: 8px 12px;
+      margin-bottom: 18px;
+    }
+    h1 {
+      font-size: clamp(34px, 7vw, 56px);
+      line-height: 1.02;
+      margin: 0 0 14px;
+      letter-spacing: -.035em;
+    }
+    .lead {
+      color: var(--muted);
+      font-size: 18px;
+      line-height: 1.6;
+      margin-bottom: 30px;
+    }
+    .steps {
+      display: grid;
+      gap: 12px;
+      margin: 24px 0;
+    }
+    .step {
+      padding: 18px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: rgba(255,255,255,.025);
+    }
+    .step strong { display: block; margin-bottom: 6px; }
+    .step span { color: var(--muted); line-height: 1.5; }
+    .btns {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 26px;
+    }
+    .btn {
+      display: inline-block;
+      text-decoration: none;
+      border-radius: 12px;
+      padding: 14px 18px;
+      font-weight: 800;
+    }
+    .primary { background: var(--gold); color: #111; }
+    .secondary { border: 1px solid var(--line); color: var(--text); }
+    .small {
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.55;
+      margin-top: 26px;
+      padding-top: 22px;
+      border-top: 1px solid var(--line);
+    }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <div class="brand">PREEMIYUM</div>
+    <div class="success">✓ Payment successful</div>
+    <h1>Welcome to Preemiyum.</h1>
+    <p class="lead" id="planText">
+      Your membership is active. We’ll now get your premium member access confirmed.
+    </p>
+
+    <section class="steps">
+      <div class="step">
+        <strong>1. Keep your Stripe confirmation email</strong>
+        <span>It confirms the email address used for your membership and helps us match your access quickly.</span>
+      </div>
+      <div class="step">
+        <strong>2. Request Premium access</strong>
+        <span>Use the button below from the same email address used at checkout. We’ll match it to your membership and provide the correct Preemiyum+ access instructions.</span>
+      </div>
+      <div class="step">
+        <strong>3. Watch Preemiyum+ for official plays</strong>
+        <span>Official plays, updates and results are posted as they qualify. No forcing action and no chasing.</span>
+      </div>
+    </section>
+
+    <div class="btns">
+      <a class="btn primary" id="accessBtn" href="mailto:preemiyumstats@gmail.com?subject=Preemiyum%20Member%20Access&body=Hi%20Preemiyum%2C%0A%0AI%20have%20just%20joined.%20Please%20send%20me%20my%20premium%20access%20instructions.%0A%0AEmail%20used%20at%20checkout%3A%20%0APlan%3A%20%0A">Request Premium Access</a>
+      <a class="btn secondary" href="https://preemiyum.com/">Back to Preemiyum</a>
+    </div>
+
+    <p class="small">
+      Sports betting involves risk. Preemiyum provides sports analysis and betting information, not guaranteed outcomes or profits.
+      Please gamble responsibly and only stake what you can afford to lose.
+    </p>
+  </main>
+
+  <script>
+    const params = new URLSearchParams(window.location.search);
+    const plan = (params.get('plan') || '').toLowerCase();
+    const planText = document.getElementById('planText');
+    const btn = document.getElementById('accessBtn');
+
+    if (plan === 'lifetime') {
+      planText.textContent = 'Your Lifetime Membership payment is complete. We’ll now get your premium member access confirmed.';
+    } else if (plan === 'monthly') {
+      planText.textContent = 'Your Monthly Membership is active. We’ll now get your premium member access confirmed.';
+    }
+
+    const bodyPlan = plan === 'lifetime' ? 'Lifetime' : (plan === 'monthly' ? 'Monthly' : '');
+    btn.href = 'mailto:preemiyumstats@gmail.com?subject=Preemiyum%20Member%20Access&body=' +
+      encodeURIComponent('Hi Preemiyum,\n\nI have just joined. Please send me my premium access instructions.\n\nEmail used at checkout: \nPlan: ' + bodyPlan + '\n');
+  </script>
+</body>
+</html>
