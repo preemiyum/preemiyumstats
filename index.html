@@ -1793,7 +1793,7 @@
       <div class="trust-item"><svg class="icon"><use href="#ic-message"/></svg> Responsible Gambling Support</div>
     </div>
 
-    <p class="pkg-note">All prices in AUD. Monthly processed securely via Stripe · Lifetime processed securely via Square.</p>
+    <p class="pkg-note">All prices in AUD. Monthly and Lifetime memberships are processed securely via Stripe.</p>
     <p class="pkg-note" style="margin-top:0.75rem;">You must be 18+ to gamble in Australia. Betting involves risk of loss and past performance does not guarantee future results. See our <a href="/terms">Terms &amp; Conditions</a> and <a href="/refund-policy">Refund Policy</a> before joining. Gambling problem? Call <a href="tel:1800858858">Gambling Help Online on 1800 858 858</a>.</p>
   </div>
 </section>
@@ -2133,7 +2133,7 @@
       <h2>Stop guessing. Start betting on verified, timestamped analysis.</h2>
       <p>Join as a Lifetime Member today — one payment, no renewals, and every pick we've ever posted is on this page for you to check yourself.</p>
       <div class="final-cta-actions">
-        <a href="https://square.link/u/d8fXnWID" target="_blank" class="btn btn-pkg-primary">Get Lifetime Access →</a>
+        <a href="https://buy.stripe.com/cNi14nc0P4HE4r90SX6Ri02" class="btn btn-pkg-primary">Get Lifetime Access →</a>
         <a href="#packages" class="btn btn-ghost">Compare Plans</a>
       </div>
       <div class="final-cta-note">
@@ -2296,12 +2296,23 @@ const params = new URLSearchParams(window.location.search)
 const refCode = params.get('ref')
 if (refCode) localStorage.setItem('preemiyum_referral_code', refCode)
 
-// Handle checkout with referral tracking
+// Secure Stripe checkout
+// NOTE: Direct Stripe Payment Links are used here to keep checkout reliable.
+// Existing referral code capture above is preserved for future affiliate re-integration.
+const CHECKOUT_LINKS = {
+  monthly: 'https://buy.stripe.com/14AaEX4yna1Y3n5gRV6Ri01',
+  lifetime: 'https://buy.stripe.com/cNi14nc0P4HE4r90SX6Ri02'
+}
+
 function handleCheckout(plan) {
-  const referralCode = localStorage.getItem('preemiyum_referral_code') || 'direct'
-  const checkoutUrl = `https://preemiyum-redesign.vercel.app/api/checkout/redirect?plan=${plan}&ref=${encodeURIComponent(referralCode)}`
+  const checkoutUrl = CHECKOUT_LINKS[plan]
+  if (!checkoutUrl) {
+    console.error('Unknown checkout plan:', plan)
+    return
+  }
   window.location.href = checkoutUrl
 }
 </script>
 </body>
 </html>
+
