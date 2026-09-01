@@ -6,7 +6,7 @@ const SPORT_MAP = {
   wnba: "basketball_wnba",
 };
 
-const BOOKS = [
+const AU_BOOKS = [
   "sportsbet",
   "ladbrokes_au",
   "neds",
@@ -14,6 +14,15 @@ const BOOKS = [
   "betr_au",
   "pointsbetau",
   "unibet",
+];
+
+const RESEARCH_BOOKS = [
+  "draftkings",
+  "fanduel",
+  "betmgm",
+  "caesars",
+  "betonlineag",
+  "bovada",
 ];
 
 const MARKETS = {
@@ -78,57 +87,54 @@ function playerName(o) {
   return o.description || o.player || o.name || "Unknown";
 }
 
-module.exports = async function handler(req, res) {
-  if (req.method !== "GET") {
-    res.statusCode = 405;
-    return res.end("Method Not Allowed");
-  }
 
-  const key = process.env.THE_ODDS_API_KEY;
-  if (!key) {
-    res.statusCode = 500;
-    return res.json({ error: "THE_ODDS_API_KEY is not configured." });
-  }
-
-  const sport = String(req.query.sport || "").toLowerCase();
-  const eventId = String(req.query.eventId || "");
-  const sportKey = SPORT_MAP[sport];
-  const markets = MARKETS[sport];
-
-  if (!sportKey || !markets || !eventId) {
-    res.statusCode = 400;
-    return res.json({ error: "Valid sport and eventId are required." });
-  }
-
-  const url = new URL(
-    `https://api.the-odds-api.com/v4/sports/${sportKey}/events/${encodeURIComponent(eventId)}/odds`
-  );
-  url.searchParams.set("apiKey", key);
-  url.searchParams.set("regions", "au");
-  url.searchParams.set("markets", markets.join(","));
-  url.searchParams.set("oddsFormat", "decimal");
-  url.searchParams.set("dateFormat", "iso");
-  url.searchParams.set("bookmakers", BOOKS.join(","));
-
+async function oddsRequest({ key, sportKey, eventId, markets, regions, bookmakers }) {
   try {
-    const r = await fetch(url.toString(), { cache: "no-store" });
-    const remaining = r.headers.get("x-requests-remaining");
-    const used = r.headers.get("x-requests-used");
-    const last = r.headers.get("x-requests-last");
+    let response = await oddsRequest({
+      key,
+      sportKey,
+      eventId,
+      markets,
+      regions: "au",
+      bookmakers: AU_BOOKS,
+    });
 
-    const text = await r.text();
-    if (!r.ok) {
-      res.statusCode = r.status;
+    if (!response.ok) {
+      res.statusCode = response.status;
       return res.json({
-        error: text || `The Odds API returned ${r.status}`,
+        error: response.text || `The Odds API returned ${response.status}`,
         hint:
-          r.status === 422 || r.status === 401
+          response.status === 422 || response.status === 401
             ? "Your current Odds API plan or this event/bookmaker combination may not include these player-prop markets."
             : null,
       });
     }
 
-    const event = JSON.parse(text);
+    let event = response.data;
+    let sourceMode = "AU_EXECUTABLE";
+    let auBookmakerCount = event?.bookmakers?.length || 0;
+
+    const auMarketCount = (event?.bookmakers || []).reduce(
+      (n, b) => n + (b.markets?.length || 0), 0
+    );
+
+    if (auMarketCount === 0 && (sport === "nba" || sport === "wnba")) {
+      const researchResponse = await oddsRequest({
+        key,
+        sportKey,
+        eventId,
+        markets,
+        regions: "us",
+        bookmakers: RESEARCH_BOOKS,
+      });
+
+      if (researchResponse.ok) {
+        event = researchResponse.data;
+        response = researchResponse;
+        sourceMode = "RESEARCH_ONLY_US";
+      }
+    }
+
     const grouped = new Map();
 
     for (const book of event.bookmakers || []) {
@@ -156,6 +162,7 @@ module.exports = async function handler(req, res) {
 
           grouped.get(id).offers.push({
             book: book.title,
+            executableInAU: sourceMode === "AU_EXECUTABLE",
             bookKey: book.key,
             side: market.key.includes("scorer") ? "yes" : side,
             price: o.price,
@@ -219,6 +226,7 @@ module.exports = async function handler(req, res) {
         pairedBooks: paired.length,
         score,
         status,
+        executableInAU: sourceMode === "AU_EXECUTABLE",
       });
     }
 
@@ -238,12 +246,20 @@ module.exports = async function handler(req, res) {
       commenceTime: event.commence_time,
       marketsRequested: markets,
       generatedAt: new Date().toISOString(),
-      requestsRemaining: remaining,
-      requestsUsed: used,
-      requestsLast: last,
+      requestsRemaining: response.remaining,
+      requestsUsed: response.used,
+      requestsLast: response.last,
       rows,
+      sourceMode,
+      auBookmakerCount,
+      diagnostics: {
+        bookmakersReturned: event?.bookmakers?.map(b => b.title) || [],
+        marketCount: (event?.bookmakers || []).reduce((n,b) => n + (b.markets?.length || 0), 0),
+      },
       note:
-        "Player prop odds are a market screen only until player history, role/minutes, team news and matchup context are attached.",
+        sourceMode === "RESEARCH_ONLY_US"
+          ? "No Australian player-prop market was returned for this event, so US books are shown for research consensus only. Do not publish those prices as an Australian executable bet."
+          : "Player prop odds are a market screen only until player history, role/minutes, team news and matchup context are attached.",
     });
   } catch (err) {
     console.error(err);
