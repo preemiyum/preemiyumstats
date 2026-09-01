@@ -623,12 +623,6 @@ module.exports = async function handler(req, res) {
       priceEV: Number.isFinite(priceEV) ? priceEV : null,
       books: Number.isFinite(books) ? books : null,
       propScreen,
-      marketContext: {
-        fairOver: Number.isFinite(fairOver) ? fairOver : null,
-        priceEV: Number.isFinite(priceEV) ? priceEV : null,
-        books: Number.isFinite(books) ? books : null,
-      },
-      unifiedDecision,
     });
 
     return res.json({

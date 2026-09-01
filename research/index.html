@@ -272,7 +272,7 @@ async function loadPlayerProps(btn){
     if(!r.ok) throw new Error(d.error||"Player props failed.");
 
     target.innerHTML=`
-      <div><strong>PLAYER PROPS — PHASE 3B</strong></div>
+      <div><strong>PLAYER PROPS — PHASE 4A</strong></div>
       <div class="recent">${d.note} ${d.requestsRemaining?`· Odds API credits remaining: ${d.requestsRemaining}`:""}</div>
       <div class="props-list">
       ${d.rows.slice(0,30).map(p=>{
