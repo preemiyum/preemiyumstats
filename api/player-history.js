@@ -298,6 +298,134 @@ function conservativePropScreen({ historyRate, bestPrice, roleGate, sampleSize }
   };
 }
 
+
+function gateFromHistory(rate, games) {
+  if (!Number.isFinite(rate) || !Number.isFinite(games) || games < 5) return "PENDING";
+  if (rate >= 0.65) return "PASS";
+  if (rate >= 0.50) return "WATCH";
+  return "FAIL";
+}
+
+function gateFromPrice({ priceEV, books }) {
+  if (!Number.isFinite(books) || books < 2) return "INSUFFICIENT";
+  if (!Number.isFinite(priceEV)) return "PENDING";
+  if (priceEV >= 0.03) return "PASS";
+  if (priceEV >= -0.01) return "WATCH";
+  return "FAIL";
+}
+
+function unifiedPropDecision({
+  l5, l10, l20,
+  average, point,
+  roleGate,
+  priceEV,
+  books,
+  propScreen,
+}) {
+  const historyGate = gateFromHistory(
+    l20?.rate ?? l10?.rate ?? l5?.rate ?? null,
+    l20?.games ?? l10?.games ?? l5?.games ?? 0
+  );
+
+  const priceGate = gateFromPrice({ priceEV, books });
+
+  let avgVsLine = null;
+  if (Number.isFinite(average) && Number.isFinite(point)) {
+    avgVsLine = average - point;
+  }
+
+  const averageGate =
+    avgVsLine == null
+      ? "PENDING"
+      : avgVsLine >= 1.5
+        ? "PASS"
+        : avgVsLine >= 0
+          ? "WATCH"
+          : "FAIL";
+
+  // Mandatory release gates.
+  // A prop can never become BET CANDIDATE while role is PENDING or price quality
+  // is unverified/insufficient. This deliberately favors no-release over forced bets.
+  const mandatoryPending =
+    roleGate === "PENDING" ||
+    priceGate === "PENDING" ||
+    priceGate === "INSUFFICIENT";
+
+  const hardFail =
+    roleGate === "FAIL" ||
+    priceGate === "FAIL" ||
+    historyGate === "FAIL";
+
+  let score = 50;
+
+  // History
+  if (historyGate === "PASS") score += 16;
+  else if (historyGate === "WATCH") score += 5;
+  else if (historyGate === "FAIL") score -= 18;
+  else score -= 5;
+
+  // Price
+  if (priceGate === "PASS") score += 18;
+  else if (priceGate === "WATCH") score += 5;
+  else if (priceGate === "FAIL") score -= 20;
+  else score -= 10;
+
+  // Role
+  if (roleGate === "PASS") score += 14;
+  else if (roleGate === "WATCH") score += 3;
+  else if (roleGate === "FAIL") score -= 20;
+  else score -= 10;
+
+  // Average vs line
+  if (averageGate === "PASS") score += 10;
+  else if (averageGate === "WATCH") score += 3;
+  else if (averageGate === "FAIL") score -= 10;
+
+  // Existing research screen is advisory only.
+  if (Number.isFinite(propScreen?.score)) {
+    score += Math.max(-8, Math.min(8, (propScreen.score - 50) * 0.16));
+  }
+
+  score = Math.max(0, Math.min(100, Math.round(score)));
+
+  let status = "NO BET";
+  let releaseLocked = true;
+
+  if (!mandatoryPending && !hardFail && score >= 75) {
+    status = "BET CANDIDATE";
+    releaseLocked = false;
+  } else if (!hardFail && score >= 55) {
+    status = "WATCH";
+  } else {
+    status = "NO BET";
+  }
+
+  const reasons = [];
+  if (priceGate === "INSUFFICIENT") reasons.push("price not verified across enough bookmakers");
+  if (priceGate === "FAIL") reasons.push("current price value failed");
+  if (roleGate === "PENDING") reasons.push("current role/lineup not yet confirmed");
+  if (roleGate === "FAIL") reasons.push("role/injury gate failed");
+  if (historyGate === "FAIL") reasons.push("recent historical hit rate is weak");
+  if (averageGate === "FAIL") reasons.push("recent average is below the current line");
+  if (!reasons.length && status === "WATCH") reasons.push("evidence is mixed or not strong enough for release");
+
+  return {
+    status,
+    score,
+    releaseLocked,
+    gates: {
+      price: priceGate,
+      history: historyGate,
+      role: roleGate,
+      averageVsLine: averageGate,
+    },
+    avgVsLine,
+    reasons,
+    policy:
+      "BET CANDIDATE is blocked whenever mandatory role or price-verification gates are unresolved. This is a research classification, not a guarantee of a winning bet."
+  };
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== "GET") {
     res.statusCode = 405;
@@ -317,6 +445,9 @@ module.exports = async function handler(req, res) {
   const marketKey = String(req.query.marketKey || "");
   const point = Number(req.query.point);
   const bestPrice = Number(req.query.bestPrice);
+  const fairOver = Number(req.query.fairOver);
+  const priceEV = Number(req.query.priceEV);
+  const books = Number(req.query.books);
   const home = String(req.query.home || "");
   const away = String(req.query.away || "");
   const date = String(req.query.date || "").slice(0,10);
@@ -482,8 +613,26 @@ module.exports = async function handler(req, res) {
       sampleSize: primarySample?.games ?? 0,
     });
 
+    const unifiedDecision = unifiedPropDecision({
+      l5: hit(5),
+      l10: hit(10),
+      l20: hit(20),
+      average: avg,
+      point: Number.isFinite(point) ? point : null,
+      roleGate: roleMinutesGate,
+      priceEV: Number.isFinite(priceEV) ? priceEV : null,
+      books: Number.isFinite(books) ? books : null,
+      propScreen,
+      marketContext: {
+        fairOver: Number.isFinite(fairOver) ? fairOver : null,
+        priceEV: Number.isFinite(priceEV) ? priceEV : null,
+        books: Number.isFinite(books) ? books : null,
+      },
+      unifiedDecision,
+    });
+
     return res.json({
-      phase:"3B",
+      phase:"4A",
       provider:"Sportradar",
       sport,
       player,
@@ -501,6 +650,12 @@ module.exports = async function handler(req, res) {
       role: currentRole,
       currentLineupError,
       propScreen,
+      marketContext: {
+        fairOver: Number.isFinite(fairOver) ? fairOver : null,
+        priceEV: Number.isFinite(priceEV) ? priceEV : null,
+        books: Number.isFinite(books) ? books : null,
+      },
+      unifiedDecision,
       note:
         sport.startsWith("nrl") && metric === "tries"
           ? "NRL/NRLW try history is reconstructed from Sportradar historical Sport Event Timeline scorer events. The role gate uses current lineup starter/named status where Sportradar has published a lineup. Exact minutes are not available in this feed."

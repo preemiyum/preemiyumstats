@@ -78,6 +78,15 @@
     .advanced-card{border:1px solid var(--line);border-radius:12px;padding:12px;background:#081626;margin-top:10px}
     .ev-good{color:var(--green)}.ev-watch{color:var(--gold)}
     .role-result{margin-top:9px}
+    .decision-box{margin-top:12px;border:1px solid var(--line);border-radius:12px;padding:13px;background:#071321}
+    .decision-title{display:flex;justify-content:space-between;gap:12px;align-items:center}
+    .decision-status{font-size:20px;font-weight:900}
+    .decision-candidate{color:var(--green)}
+    .decision-watch{color:var(--gold)}
+    .decision-nobet{color:var(--red)}
+    .gate-mini{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;margin-top:10px}
+    .reason-list{margin-top:9px;color:var(--muted);font-size:12px}
+    .release-lock{margin-top:9px;color:var(--gold);font-weight:800}
     @media(max-width:900px){.stats{grid-template-columns:1fr 1fr 1fr}.gate-grid{grid-template-columns:1fr 1fr}}
     @media(max-width:620px){h1{font-size:30px}.stats{grid-template-columns:1fr 1fr}.top{flex-direction:column}}
   </style>
@@ -85,7 +94,7 @@
 <body>
 <header>
   <div class="brand"><span>P</span> PREEMIYUM</div>
-  <div style="color:#9eafc5;font-size:13px">RESEARCH ENGINE — PHASE 3C + 3D</div>
+  <div style="color:#9eafc5;font-size:13px">RESEARCH ENGINE — PHASE 4A</div>
 </header>
 <main class="wrap">
   <h1>Preemiyum Research Engine</h1>
@@ -101,7 +110,7 @@
   </div>
 
   <div class="banner">
-    <strong>Important:</strong> Phase 3C adds deeper NRL performance props; Phase 3D adds NBA/WNBA minutes, usage and injury-aware role research.
+    <strong>Important:</strong> Phase 4A adds a unified prop decision engine that combines price verification, history, role and line context into BET CANDIDATE / WATCH / NO BET.
     A selection can only become a <strong>VALUE CANDIDATE</strong> here. Official approval remains locked until
     form, role/minutes, injury/team news, matchup, projection and line-movement checks are added in Phase 2B.
   </div>
@@ -278,7 +287,7 @@ async function loadPlayerProps(btn){
               <div class="prop-player">${p.player}</div>
               <div class="prop-market">${p.market}${p.point!=null?` · line ${p.point}`:""}</div>
             </div>
-            <div class="${p.status==="PROP WATCH"?"watch":"pass"}"><b>${p.status}</b></div>
+            <div class="${p.status==="PROP WATCH"?"watch":"pass"}"><b>${p.status==="PROP WATCH"?"WATCH":p.status==="PASS"?"NO BET":p.status}</b></div>
           </div>
           <div class="prop-stats">
             <div class="deep-stat"><div class="label">Best price</div><div class="v">${price?"$"+price.toFixed(2):"—"}</div></div>
@@ -296,7 +305,10 @@ async function loadPlayerProps(btn){
               data-home="${btn.dataset.home.replaceAll('"','&quot;')}"
               data-away="${btn.dataset.away.replaceAll('"','&quot;')}"
               data-date="${btn.dataset.date}"
-              data-best-price="${price??""}">Research player history</button>
+              data-best-price="${price??""}"
+              data-fair-over="${p.fairOver??""}"
+              data-price-ev="${p.priceEV??""}"
+              data-books="${p.books??""}">Research player history</button>
             <div class="history-result"></div>
           </div>`:`<div class="recent">Detailed NBA/WNBA player history requires the basketball-statistics module planned next.</div>`}
         </div>`;
@@ -327,7 +339,10 @@ async function loadPlayerHistory(btn){
       home:btn.dataset.home,
       away:btn.dataset.away,
       date:btn.dataset.date,
-      bestPrice:btn.dataset.bestPrice
+      bestPrice:btn.dataset.bestPrice,
+      fairOver:btn.dataset.fairOver,
+      priceEV:btn.dataset.priceEv,
+      books:btn.dataset.books
     });
     const r=await fetch("/api/player-history?"+q.toString(),{cache:"no-store"});
     const d=await r.json();
@@ -358,6 +373,34 @@ async function loadPlayerHistory(btn){
           <div class="deep-stat"><div class="label">Provider</div><div class="v">${d.provider}</div></div>
         </div>
         <div class="availability-note">${d.propScreen.note}</div>
+      </div>`:""}
+
+      ${d.unifiedDecision?`
+      <div class="decision-box">
+        <div class="decision-title">
+          <div>
+            <div class="label">UNIFIED DECISION — PHASE 4A</div>
+            <div class="decision-status ${
+              d.unifiedDecision.status==="BET CANDIDATE"
+                ?"decision-candidate"
+                :d.unifiedDecision.status==="WATCH"
+                  ?"decision-watch"
+                  :"decision-nobet"
+            }">${d.unifiedDecision.status}</div>
+          </div>
+          <div class="v">${d.unifiedDecision.score}/100</div>
+        </div>
+
+        <div class="gate-mini">
+          <div class="deep-stat"><div class="label">Price</div><div class="v ${deepGateClass(d.unifiedDecision.gates.price)}">${d.unifiedDecision.gates.price}</div></div>
+          <div class="deep-stat"><div class="label">History</div><div class="v ${deepGateClass(d.unifiedDecision.gates.history)}">${d.unifiedDecision.gates.history}</div></div>
+          <div class="deep-stat"><div class="label">Role</div><div class="v ${deepGateClass(d.unifiedDecision.gates.role)}">${d.unifiedDecision.gates.role}</div></div>
+          <div class="deep-stat"><div class="label">Avg vs line</div><div class="v ${deepGateClass(d.unifiedDecision.gates.averageVsLine)}">${d.unifiedDecision.gates.averageVsLine}${d.unifiedDecision.avgVsLine!=null?` (${d.unifiedDecision.avgVsLine>=0?"+":""}${Number(d.unifiedDecision.avgVsLine).toFixed(1)})`:""}</div></div>
+        </div>
+
+        ${d.unifiedDecision.reasons?.length?`<div class="reason-list"><b>Why:</b> ${d.unifiedDecision.reasons.join(" · ")}</div>`:""}
+        ${d.unifiedDecision.releaseLocked?`<div class="release-lock">🔒 RELEASE LOCKED — do not publish as an Official Play yet.</div>`:"<div class='release-lock'>Research gates cleared for candidate review. Human/operator approval still required.</div>"}
+        <div class="availability-note">${d.unifiedDecision.policy}</div>
       </div>`:""}
 
       <div class="recent">${d.recent.slice(0,10).map(x=>`${x.value} v ${x.opponent}`).join(" · ")}</div>
