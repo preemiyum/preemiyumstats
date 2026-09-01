@@ -96,7 +96,7 @@
     .operator-sub{color:var(--muted);font-size:12px;margin-top:4px;max-width:760px}
     .operator-actions{display:flex;gap:8px;flex-wrap:wrap}
     .operator-actions button{padding:8px 11px}
-    .operator-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:14px}
+    .operator-summary{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-top:14px}
     .summary-tile{border:1px solid var(--line);border-radius:12px;background:#091a2c;padding:11px}
     .summary-tile .n{font-size:24px;font-weight:900}
     .operator-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}
@@ -115,12 +115,25 @@
       .operator-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
     }
 
+
+    .persist-pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:999px;padding:6px 9px;font-size:11px;color:var(--muted);background:#081625}
+    .history-panel{margin-top:14px;border:1px solid var(--line);border-radius:13px;background:#081625;padding:11px}
+    .history-row{display:grid;grid-template-columns:155px 1fr 110px 1fr;gap:8px;align-items:center;border-top:1px solid var(--line);padding:8px 0;font-size:11px}
+    .history-row:first-child{border-top:0}
+    .history-time{color:var(--muted)}
+    .change-up{color:var(--green);font-weight:800}
+    .change-down{color:var(--red);font-weight:800}
+    .change-flat{color:var(--gold);font-weight:800}
+    .short-meta strong{color:var(--text)}
+    .recheck-status{font-size:11px;color:var(--muted);margin-top:8px}
+    @media(max-width:900px){.history-row{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
 <header>
   <div class="brand"><span>P</span> PREEMIYUM</div>
-  <div style="color:#9eafc5;font-size:13px">RESEARCH ENGINE — PHASE 4B</div>
+  <div style="color:#9eafc5;font-size:13px">RESEARCH ENGINE — PHASE 4C</div>
 </header>
 <main class="wrap">
   <h1>Preemiyum Research Engine</h1>
@@ -145,15 +158,17 @@
   <section class="operator-board" id="operator-board">
     <div class="operator-head">
       <div>
-        <div class="operator-title">Operator Shortlist — Phase 4B</div>
+        <div class="operator-title">Persistent Operator Board — Phase 4C</div>
         <div class="operator-sub">
           Research results are collected here automatically after a player-history check.
           Only BET CANDIDATE can move to operator review; locked or failed props stay out of subscriber output.
         </div>
       </div>
       <div class="operator-actions">
-        <button id="operator-refresh">Refresh shortlist</button>
-        <button id="operator-clear">Clear session</button>
+        <span class="persist-pill">● Saved in this browser</span>
+        <button id="operator-recheck">Re-check WATCH items</button>
+        <button id="operator-refresh">Refresh board</button>
+        <button id="operator-clear">Clear saved research</button>
       </div>
     </div>
 
@@ -161,7 +176,8 @@
       <div class="summary-tile"><div class="label">Bet candidates</div><div class="n ok" id="sum-candidate">0</div></div>
       <div class="summary-tile"><div class="label">Watchlist</div><div class="n pending" id="sum-watch">0</div></div>
       <div class="summary-tile"><div class="label">No bet / rejected</div><div class="n fail" id="sum-nobet">0</div></div>
-      <div class="summary-tile"><div class="label">Researched this session</div><div class="n" id="sum-total">0</div></div>
+      <div class="summary-tile"><div class="label">Saved research</div><div class="n" id="sum-total">0</div></div>
+      <div class="summary-tile"><div class="label">Decision changes</div><div class="n" id="sum-changes">0</div></div>
     </div>
 
     <div class="operator-columns">
@@ -179,8 +195,19 @@
       </div>
     </div>
 
+    <div id="operator-recheck-status" class="recheck-status"></div>
+
+    <div class="history-panel">
+      <div style="display:flex;justify-content:space-between;gap:10px;align-items:center">
+        <h3 style="margin:0">Decision Change Log</h3>
+        <span class="persist-pill" id="last-saved">Not saved yet</span>
+      </div>
+      <div id="decision-history"></div>
+    </div>
+
     <div class="operator-note">
-      This shortlist is session-local and research-only. It does not publish to Telegram, Instagram or customers.
+      Saved research persists in this browser across reloads. Re-checking WATCH items uses fresh Odds API calls and may consume API credits.
+      Nothing is published automatically to Telegram, Instagram or customers.
     </div>
   </section>
 
@@ -199,7 +226,64 @@ let currentSport="nrl";
 const content=document.getElementById("content");
 const meta=document.getElementById("meta");
 
+const STORAGE_KEY="preemiyum_phase4c_research_v1";
+const HISTORY_KEY="preemiyum_phase4c_history_v1";
 const operatorState = new Map();
+let decisionHistory=[];
+
+function loadPersistentResearch(){
+  try{
+    const saved=JSON.parse(localStorage.getItem(STORAGE_KEY)||"[]");
+    if(Array.isArray(saved)){
+      saved.forEach(x=>{
+        if(x && x.key) operatorState.set(x.key,x.item);
+      });
+    }
+    const hist=JSON.parse(localStorage.getItem(HISTORY_KEY)||"[]");
+    if(Array.isArray(hist)) decisionHistory=hist.slice(0,200);
+  }catch(e){
+    console.warn("Could not restore Phase 4C state",e);
+  }
+}
+
+function savePersistentResearch(){
+  try{
+    const saved=[...operatorState.entries()].map(([key,item])=>({key,item}));
+    localStorage.setItem(STORAGE_KEY,JSON.stringify(saved));
+    localStorage.setItem(HISTORY_KEY,JSON.stringify(decisionHistory.slice(0,200)));
+    const el=document.getElementById("last-saved");
+    if(el) el.textContent="Saved "+new Date().toLocaleString("en-AU");
+  }catch(e){
+    console.warn("Could not save Phase 4C state",e);
+  }
+}
+
+function recordDecisionChange(previous,next){
+  const changed=!previous ||
+    previous.status!==next.status ||
+    Number(previous.score)!==Number(next.score) ||
+    previous.releaseLocked!==next.releaseLocked ||
+    String(previous.bestPrice)!==String(next.bestPrice) ||
+    String(previous.books)!==String(next.books);
+
+  if(!changed) return;
+
+  decisionHistory.unshift({
+    at:new Date().toISOString(),
+    player:next.player,
+    sport:next.sport,
+    market:next.market,
+    line:next.line,
+    fromStatus:previous?.status||"NEW",
+    toStatus:next.status,
+    fromScore:previous?.score??null,
+    toScore:next.score,
+    fromPrice:previous?.bestPrice??null,
+    toPrice:next.bestPrice??null,
+    reasons:next.reasons||[]
+  });
+  decisionHistory=decisionHistory.slice(0,200);
+}
 
 function operatorKey(x){
   return [
@@ -232,13 +316,38 @@ function renderShortCard(x){
         <div class="short-player">${esc(x.player)}</div>
         <div class="short-meta">${esc((x.sport||"").toUpperCase())} · ${esc(x.market)}${x.line!==""&&x.line!=null?` · line ${esc(x.line)}`:""}</div>
         <div class="short-meta">${esc(x.away)} @ ${esc(x.home)}${x.date?` · ${esc(x.date)}`:""}</div>
-        <div class="short-meta">Best AU price: ${price}${x.book?` · ${esc(x.book)}`:""}</div>
+        <div class="short-meta">Best AU price: ${price}${x.book?` · ${esc(x.book)}`:""}${x.books!=null?` · ${esc(x.books)} book${Number(x.books)===1?"":"s"}`:""}</div>
+        <div class="short-meta">Last researched: ${x.checkedAt?esc(new Date(x.checkedAt).toLocaleString("en-AU")):"—"}</div>
       </div>
       <div class="short-score">${esc(x.score)}/100</div>
     </div>
     <div class="short-reason">${esc(reason)}</div>
     ${x.releaseLocked?`<div class="short-lock">🔒 RELEASE LOCKED</div>`:"<div class='short-lock'>Candidate requires operator approval.</div>"}
   </div>`;
+}
+
+function renderDecisionHistory(){
+  const box=document.getElementById("decision-history");
+  const count=document.getElementById("sum-changes");
+  if(count) count.textContent=decisionHistory.length;
+  if(!box) return;
+
+  if(!decisionHistory.length){
+    box.innerHTML=`<div class="empty-short">No decision changes recorded yet.</div>`;
+    return;
+  }
+
+  box.innerHTML=decisionHistory.slice(0,25).map(h=>{
+    const cls=h.toStatus==="BET CANDIDATE"?"change-up":h.toStatus==="NO BET"?"change-down":"change-flat";
+    const score=(h.fromScore==null?"—":h.fromScore)+" → "+(h.toScore==null?"—":h.toScore);
+    const price=(h.fromPrice==null?"—":"$"+Number(h.fromPrice).toFixed(2))+" → "+(h.toPrice==null?"—":"$"+Number(h.toPrice).toFixed(2));
+    return `<div class="history-row">
+      <div class="history-time">${esc(new Date(h.at).toLocaleString("en-AU"))}</div>
+      <div><strong>${esc(h.player)}</strong><br><span class="short-meta">${esc((h.sport||"").toUpperCase())} · ${esc(h.market||"")}${h.line!=null&&h.line!==""?` · line ${esc(h.line)}`:""}</span></div>
+      <div class="${cls}">${esc(h.fromStatus)} → ${esc(h.toStatus)}</div>
+      <div class="short-meta">Score ${esc(score)} · Price ${esc(price)}${h.reasons?.length?`<br>${esc(h.reasons.join(" · "))}`:""}</div>
+    </div>`;
+  }).join("");
 }
 
 function renderOperatorBoard(){
@@ -258,10 +367,19 @@ function renderOperatorBoard(){
     watch.length?watch.map(renderShortCard).join(""):`<div class="empty-short">No watch items yet.</div>`;
   document.getElementById("short-nobet").innerHTML =
     nobet.length?nobet.map(renderShortCard).join(""):`<div class="empty-short">No rejected props yet.</div>`;
+  renderDecisionHistory();
 }
 
 function addOperatorDecision(item){
-  operatorState.set(operatorKey(item),item);
+  const key=operatorKey(item);
+  const previous=operatorState.get(key);
+  const next={
+    ...item,
+    checkedAt:new Date().toISOString()
+  };
+  recordDecisionChange(previous,next);
+  operatorState.set(key,next);
+  savePersistentResearch();
   renderOperatorBoard();
 }
 
@@ -440,6 +558,7 @@ async function loadPlayerProps(btn){
               data-home="${btn.dataset.home.replaceAll('"','&quot;')}"
               data-away="${btn.dataset.away.replaceAll('"','&quot;')}"
               data-date="${btn.dataset.date}"
+              data-event-id="${btn.dataset.eventId}"
               data-best-price="${price??""}"
               data-fair-over="${p.fairOver??""}"
               data-price-ev="${p.priceEV??""}"
@@ -458,6 +577,99 @@ async function loadPlayerProps(btn){
   }finally{
     btn.disabled=false;
     btn.textContent="Load player props";
+  }
+}
+
+function matchPropRow(rows,item){
+  return (rows||[]).find(p=>{
+    const samePlayer=String(p.player||"").toLowerCase()===String(item.player||"").toLowerCase();
+    const sameMarket=String(p.marketKey||"")===String(item.marketKey||"");
+    const samePoint=String(p.point??"")===String(item.point??"");
+    return samePlayer && sameMarket && samePoint;
+  }) || null;
+}
+
+async function recheckSavedWatchItem(item){
+  if(!item.eventId) throw new Error("Missing event ID for saved item.");
+
+  const propsQ=new URLSearchParams({sport:item.sport,eventId:item.eventId});
+  const pr=await fetch("/api/player-props?"+propsQ.toString(),{cache:"no-store"});
+  const pd=await pr.json();
+  if(!pr.ok) throw new Error(pd.error||"Player props refresh failed.");
+
+  const fresh=matchPropRow(pd.rows,item);
+  if(!fresh) throw new Error("Current matching prop was not returned by the market feed.");
+
+  const best=fresh.bestOver||fresh.bestYes||null;
+  const bestPrice=best?.price??item.bestPrice;
+  const book=best?.book??item.book;
+  const fairOver=fresh.fairOver??null;
+  const priceEV=fresh.priceEV??null;
+  const books=fresh.books??0;
+
+  const histQ=new URLSearchParams({
+    sport:item.sport,
+    player:item.player,
+    marketKey:item.marketKey,
+    point:item.point??"",
+    home:item.home,
+    away:item.away,
+    date:item.date,
+    bestPrice:bestPrice??"",
+    fairOver:fairOver??"",
+    priceEV:priceEV??"",
+    books:books??""
+  });
+
+  const hr=await fetch("/api/player-history?"+histQ.toString(),{cache:"no-store"});
+  const hd=await hr.json();
+  if(!hr.ok) throw new Error(hd.error||"Player history re-check failed.");
+  if(!hd.unifiedDecision) throw new Error("Unified decision not returned.");
+
+  addOperatorDecision({
+    ...item,
+    bestPrice,
+    book,
+    fairOver,
+    priceEV,
+    books,
+    score:hd.unifiedDecision.score,
+    status:hd.unifiedDecision.status,
+    releaseLocked:hd.unifiedDecision.releaseLocked,
+    reasons:hd.unifiedDecision.reasons||[]
+  });
+
+  return hd.unifiedDecision;
+}
+
+async function recheckWatchlist(){
+  const statusEl=document.getElementById("operator-recheck-status");
+  const watch=[...operatorState.values()].filter(x=>x.status==="WATCH");
+
+  if(!watch.length){
+    statusEl.textContent="No WATCH items are currently saved.";
+    return;
+  }
+
+  const btn=document.getElementById("operator-recheck");
+  btn.disabled=true;
+  let ok=0, failed=0;
+
+  try{
+    for(let i=0;i<watch.length;i++){
+      statusEl.textContent=`Re-checking WATCH item ${i+1} of ${watch.length}: ${watch[i].player}…`;
+      try{
+        await recheckSavedWatchItem(watch[i]);
+        ok++;
+      }catch(e){
+        failed++;
+        console.warn("Watch re-check failed",watch[i],e);
+      }
+    }
+    statusEl.textContent=`WATCH re-check complete: ${ok} updated${failed?`, ${failed} could not be refreshed`:""}.`;
+  }finally{
+    btn.disabled=false;
+    renderOperatorBoard();
   }
 }
 
@@ -808,11 +1020,19 @@ document.querySelectorAll("[data-sport]").forEach(btn=>{
 document.getElementById("refresh").addEventListener("click",load);
 
 document.getElementById("operator-refresh").addEventListener("click",renderOperatorBoard);
+document.getElementById("operator-recheck").addEventListener("click",recheckWatchlist);
 document.getElementById("operator-clear").addEventListener("click",()=>{
+  const ok=window.confirm("Clear all saved Phase 4C research and decision history from this browser?");
+  if(!ok) return;
   operatorState.clear();
+  decisionHistory=[];
+  localStorage.removeItem(STORAGE_KEY);
+  localStorage.removeItem(HISTORY_KEY);
   renderOperatorBoard();
+  document.getElementById("operator-recheck-status").textContent="Saved research cleared.";
 });
 
+loadPersistentResearch();
 renderOperatorBoard();
 load();
 </script>
