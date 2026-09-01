@@ -57,6 +57,10 @@
     .deep-stat{border:1px solid var(--line);border-radius:10px;padding:10px}
     .deep-stat .v{font-weight:850;font-size:17px;margin-top:4px}
     .recent{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5}
+    .lineup-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:10px}
+    .lineup-card{border:1px solid var(--line);border-radius:10px;padding:10px;background:#06111f}
+    .player-list{font-size:11px;color:var(--muted);line-height:1.55;margin-top:6px;max-height:130px;overflow:auto}
+    .availability-note{font-size:11px;color:var(--gold);margin-top:8px}
     @media(max-width:900px){.stats{grid-template-columns:1fr 1fr 1fr}.gate-grid{grid-template-columns:1fr 1fr}}
     @media(max-width:620px){h1{font-size:30px}.stats{grid-template-columns:1fr 1fr}.top{flex-direction:column}}
   </style>
@@ -64,7 +68,7 @@
 <body>
 <header>
   <div class="brand"><span>P</span> PREEMIYUM</div>
-  <div style="color:#9eafc5;font-size:13px">RESEARCH ENGINE — PHASE 2A</div>
+  <div style="color:#9eafc5;font-size:13px">RESEARCH ENGINE — PHASE 2C</div>
 </header>
 <main class="wrap">
   <h1>Preemiyum Research Engine</h1>
@@ -80,7 +84,7 @@
   </div>
 
   <div class="banner">
-    <strong>Important:</strong> Phase 2A will no longer label a price-only opportunity as an Official Play.
+    <strong>Important:</strong> Phase 2C combines price screening, recent form, matchup history and published lineup availability.
     A selection can only become a <strong>VALUE CANDIDATE</strong> here. Official approval remains locked until
     form, role/minutes, injury/team news, matchup, projection and line-movement checks are added in Phase 2B.
   </div>
@@ -139,18 +143,33 @@ async function runDeepResearch(btn){
     const recent=(arr)=>arr?.map(g=>`${g.result} v ${g.opponent}`).join(" · ")||"No data";
 
     target.innerHTML=`
-      <div><strong>SPORTRADAR DEEP CONTEXT</strong></div>
+      <div><strong>SPORTRADAR DEEP CONTEXT — PHASE 2C</strong></div>
       <div class="deep-grid">
         <div class="deep-stat"><div class="label">Selected L5</div><div class="v">${selected?.label||"N/A"}</div></div>
         <div class="deep-stat"><div class="label">Opponent L5</div><div class="v">${opp?.label||"N/A"}</div></div>
         <div class="deep-stat"><div class="label">H2H L5</div><div class="v">${h2h?.label||"N/A"}</div></div>
         <div class="deep-stat"><div class="label">Form gate</div><div class="v ${deepGateClass(d.gates.form)}">${d.gates.form}</div></div>
         <div class="deep-stat"><div class="label">Matchup gate</div><div class="v ${deepGateClass(d.gates.matchup)}">${d.gates.matchup}</div></div>
-        <div class="deep-stat"><div class="label">Provider</div><div class="v">${d.provider}</div></div>
+        <div class="deep-stat"><div class="label">Team news / lineup</div><div class="v ${deepGateClass(d.gates.injuriesTeamNews)}">${d.gates.injuriesTeamNews}</div></div>
       </div>
       <div class="recent"><b>${d.home.name}:</b> ${recent(d.home.recent)}</div>
       <div class="recent"><b>${d.away.name}:</b> ${recent(d.away.recent)}</div>
       <div class="recent"><b>Selected H2H:</b> ${recent(d.h2h.recent)}</div>
+
+      <div class="lineup-grid">
+        <div class="lineup-card">
+          <b>${d.lineups?.home?.team||d.home.name}</b>
+          <div class="recent">Named: ${d.lineups?.home?.totalNamed||0} · Starters: ${d.lineups?.home?.startersNamed||0} · Positions: ${d.lineups?.home?.positionsNamed||0}</div>
+          <div class="player-list">${(d.lineups?.home?.players||[]).slice(0,26).map(p=>`${p.starter?"★ ":""}${p.name}${p.position?` (${p.position})`:""}`).join("<br>")||"Lineup not yet available"}</div>
+        </div>
+        <div class="lineup-card">
+          <b>${d.lineups?.away?.team||d.away.name}</b>
+          <div class="recent">Named: ${d.lineups?.away?.totalNamed||0} · Starters: ${d.lineups?.away?.startersNamed||0} · Positions: ${d.lineups?.away?.positionsNamed||0}</div>
+          <div class="player-list">${(d.lineups?.away?.players||[]).slice(0,26).map(p=>`${p.starter?"★ ":""}${p.name}${p.position?` (${p.position})`:""}`).join("<br>")||"Lineup not yet available"}</div>
+        </div>
+      </div>
+      ${d.lineups?.error?`<div class="availability-note">Lineup feed note: ${d.lineups.error}</div>`:""}
+      <div class="availability-note">“Team news / lineup” means named squad/lineup availability from Sportradar. It does not by itself confirm every injury or late withdrawal.</div>
       <div class="recent" style="margin-top:10px">${d.note}</div>`;
   }catch(e){
     target.innerHTML=`<div class="err">${String(e.message||e)}</div>`;

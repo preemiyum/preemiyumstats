@@ -139,6 +139,61 @@ function recordSummary(games) {
   };
 }
 
+
+function lineupCompetitors(data) {
+  if (Array.isArray(data?.competitors)) return data.competitors;
+  if (Array.isArray(data?.lineups)) return data.lineups;
+  if (Array.isArray(data?.sport_event?.competitors)) return data.sport_event.competitors;
+  return [];
+}
+
+function playersOfLineup(comp) {
+  if (Array.isArray(comp?.players)) return comp.players;
+  if (Array.isArray(comp?.player)) return comp.player;
+  if (Array.isArray(comp?.lineup?.players)) return comp.lineup.players;
+  return [];
+}
+
+function lineupSummary(data, competitorId, fallbackName) {
+  const comps = lineupCompetitors(data);
+  const comp =
+    comps.find(c => c.id === competitorId) ||
+    comps.find(c => sameTeam(c.name, fallbackName)) ||
+    null;
+
+  const players = playersOfLineup(comp).map(p => ({
+    id: p.id || null,
+    name: p.name || `${p.first_name || ""} ${p.last_name || ""}`.trim() || "Unknown",
+    jerseyNumber: p.jersey_number ?? null,
+    position: p.type || p.position || null,
+    starter: p.starter === true,
+    played: p.played === true,
+  }));
+
+  return {
+    team: comp?.name || fallbackName,
+    totalNamed: players.length,
+    startersNamed: players.filter(p => p.starter).length,
+    positionsNamed: players.filter(p => p.position).length,
+    players,
+  };
+}
+
+function hasLineupCoverage(match) {
+  const props =
+    match?.sport_event?.coverage?.sport_event_properties ||
+    match?.sport_event?.coverage?.properties ||
+    [];
+  if (Array.isArray(props)) {
+    const p = props.find(x => x.type === "lineups");
+    if (p) return p.value === true || String(p.value).toLowerCase() === "true";
+  }
+  if (props && typeof props === "object") {
+    if ("lineups" in props) return Boolean(props.lineups);
+  }
+  return null;
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== "GET") {
     res.statusCode = 405;
@@ -216,6 +271,23 @@ module.exports = async function handler(req, res) {
       key
     );
 
+    // Current event lineups / named squads. Sportradar documents this feed for
+    // Rugby and Australian Rules where lineup coverage is available.
+    let lineupRaw = null;
+    let lineupError = null;
+    const matchedEventId = match?.sport_event?.id || null;
+    if (matchedEventId) {
+      try {
+        lineupRaw = await srFetch(
+          `${base}/sport_events/${encodeURIComponent(matchedEventId)}/lineups.json`,
+          key
+        );
+      } catch (e) {
+        // Lineups may not yet be published or may not be available on trial coverage.
+        lineupError = e?.message || String(e);
+      }
+    }
+
     const homeHistory = recentRecord(getSummaries(homeHistoryRaw), homeComp.id, 5);
     const awayHistory = recentRecord(getSummaries(awayHistoryRaw), awayComp.id, 5);
     const h2hGames = recentRecord(getSummaries(h2hRaw), sameTeam(selection, home) ? homeComp.id : awayComp.id, 5);
@@ -237,6 +309,24 @@ module.exports = async function handler(req, res) {
       else formGate = "WATCH";
     }
 
+
+    const lineupCoverage = hasLineupCoverage(match);
+    const homeLineup = lineupRaw
+      ? lineupSummary(lineupRaw, homeComp.id, homeComp.name)
+      : { team: homeComp.name, totalNamed: 0, startersNamed: 0, positionsNamed: 0, players: [] };
+    const awayLineup = lineupRaw
+      ? lineupSummary(lineupRaw, awayComp.id, awayComp.name)
+      : { team: awayComp.name, totalNamed: 0, startersNamed: 0, positionsNamed: 0, players: [] };
+
+    // This gate reflects published team selections / lineup availability.
+    // It is NOT a medical injury feed.
+    let availabilityGate = "PENDING";
+    if (lineupRaw && homeLineup.totalNamed >= 10 && awayLineup.totalNamed >= 10) {
+      availabilityGate = "PASS";
+    } else if (lineupCoverage === false) {
+      availabilityGate = "PENDING";
+    }
+
     let matchupGate = "PENDING";
     if ((h2hRec.wins + h2hRec.losses + h2hRec.draws) >= 3) {
       if (h2hRec.winRate >= 0.60) matchupGate = "PASS";
@@ -249,6 +339,8 @@ module.exports = async function handler(req, res) {
       phase: "2B",
       sport,
       matchedEventId: match?.sport_event?.id || null,
+      lineupCoverage,
+      lineups: { home: homeLineup, away: awayLineup, error: lineupError },
       home: { id: homeComp.id, name: homeComp.name, recent: homeHistory, record: homeRec },
       away: { id: awayComp.id, name: awayComp.name, recent: awayHistory, record: awayRec },
       selectedTeam: selection,
@@ -259,12 +351,12 @@ module.exports = async function handler(req, res) {
         form: formGate,
         matchup: matchupGate,
         roleMinutes: "PENDING",
-        injuriesTeamNews: "PENDING",
+        injuriesTeamNews: availabilityGate,
         projection: "PENDING",
         lineMovement: "PENDING",
       },
       note:
-        "Form and H2H are deterministic first-pass gates from recent completed matches. They are not sufficient by themselves for an Official Play."
+        "Form and H2H are deterministic first-pass gates. The team-news gate reflects published lineups/named squads only; it is not a medical injury diagnosis or a complete injury-news feed. These checks are not sufficient by themselves for an Official Play."
     });
   } catch (err) {
     console.error(err);
