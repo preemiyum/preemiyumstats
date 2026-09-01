@@ -61,6 +61,9 @@
     .lineup-card{border:1px solid var(--line);border-radius:10px;padding:10px;background:#06111f}
     .player-list{font-size:11px;color:var(--muted);line-height:1.55;margin-top:6px;max-height:130px;overflow:auto}
     .availability-note{font-size:11px;color:var(--gold);margin-top:8px}
+    .projection-box{margin-top:10px;border:1px solid var(--line);border-radius:10px;padding:11px;background:#06111f}
+    .movement-box{margin-top:10px;border:1px solid var(--line);border-radius:10px;padding:11px;background:#06111f}
+    .movement-good{color:var(--green)}.movement-bad{color:var(--red)}.movement-neutral{color:var(--gold)}
     @media(max-width:900px){.stats{grid-template-columns:1fr 1fr 1fr}.gate-grid{grid-template-columns:1fr 1fr}}
     @media(max-width:620px){h1{font-size:30px}.stats{grid-template-columns:1fr 1fr}.top{flex-direction:column}}
   </style>
@@ -68,7 +71,7 @@
 <body>
 <header>
   <div class="brand"><span>P</span> PREEMIYUM</div>
-  <div style="color:#9eafc5;font-size:13px">RESEARCH ENGINE — PHASE 2C</div>
+  <div style="color:#9eafc5;font-size:13px">RESEARCH ENGINE — PHASE 2D</div>
 </header>
 <main class="wrap">
   <h1>Preemiyum Research Engine</h1>
@@ -84,7 +87,7 @@
   </div>
 
   <div class="banner">
-    <strong>Important:</strong> Phase 2C combines price screening, recent form, matchup history and published lineup availability.
+    <strong>Important:</strong> Phase 2D adds a conservative market-anchored projection and observed price movement on top of price, form, matchup and lineup research.
     A selection can only become a <strong>VALUE CANDIDATE</strong> here. Official approval remains locked until
     form, role/minutes, injury/team news, matchup, projection and line-movement checks are added in Phase 2B.
   </div>
@@ -132,7 +135,8 @@ async function runDeepResearch(btn){
   target.innerHTML="";
 
   try{
-    const q=new URLSearchParams({sport,home,away,selection,date});
+    const marketFairProb=btn.dataset.marketFairProb;
+    const q=new URLSearchParams({sport,home,away,selection,date,marketFairProb});
     const r=await fetch("/api/research-context?"+q.toString(),{cache:"no-store"});
     const d=await r.json();
     if(!r.ok) throw new Error(d.error||"Deep research failed.");
@@ -143,7 +147,7 @@ async function runDeepResearch(btn){
     const recent=(arr)=>arr?.map(g=>`${g.result} v ${g.opponent}`).join(" · ")||"No data";
 
     target.innerHTML=`
-      <div><strong>SPORTRADAR DEEP CONTEXT — PHASE 2C</strong></div>
+      <div><strong>SPORTRADAR DEEP CONTEXT — PHASE 2D</strong></div>
       <div class="deep-grid">
         <div class="deep-stat"><div class="label">Selected L5</div><div class="v">${selected?.label||"N/A"}</div></div>
         <div class="deep-stat"><div class="label">Opponent L5</div><div class="v">${opp?.label||"N/A"}</div></div>
@@ -170,6 +174,17 @@ async function runDeepResearch(btn){
       </div>
       ${d.lineups?.error?`<div class="availability-note">Lineup feed note: ${d.lineups.error}</div>`:""}
       <div class="availability-note">“Team news / lineup” means named squad/lineup availability from Sportradar. It does not by itself confirm every injury or late withdrawal.</div>
+      ${d.projection?`
+      <div class="projection-box">
+        <b>${d.projection.version}</b>
+        <div class="deep-grid">
+          <div class="deep-stat"><div class="label">Market fair</div><div class="v">${(d.projection.marketFairProbability*100).toFixed(1)}%</div></div>
+          <div class="deep-stat"><div class="label">Research projection</div><div class="v">${(d.projection.modelProbability*100).toFixed(1)}%</div></div>
+          <div class="deep-stat"><div class="label">Model edge</div><div class="v ${deepGateClass(d.gates.projection)}">${(d.projection.modelEdge>=0?"+":"")+(d.projection.modelEdge*100).toFixed(1)}pp</div></div>
+        </div>
+        <div class="recent">Form adjustment: ${(d.projection.formAdjustment*100).toFixed(1)}pp · H2H adjustment: ${(d.projection.h2hAdjustment*100).toFixed(1)}pp</div>
+        <div class="availability-note">${d.projection.note}</div>
+      </div>`:`<div class="projection-box"><b>Research Projection V0.1</b><div class="recent">Insufficient recent data to calculate a projection.</div></div>`}
       <div class="recent" style="margin-top:10px">${d.note}</div>`;
   }catch(e){
     target.innerHTML=`<div class="err">${String(e.message||e)}</div>`;
@@ -177,6 +192,45 @@ async function runDeepResearch(btn){
     btn.disabled=false;
     btn.textContent="Run deep research";
   }
+}
+
+
+const MOVEMENT_KEY="preemiyum_market_snapshots_v1";
+
+function readSnapshots(){
+  try{return JSON.parse(localStorage.getItem(MOVEMENT_KEY)||"{}");}catch{return {};}
+}
+function saveSnapshots(x){
+  try{localStorage.setItem(MOVEMENT_KEY,JSON.stringify(x));}catch{}
+}
+function movementKey(row){return `${row.sport}:${row.eventId}:${row.selection}`;}
+
+function observeMovement(row){
+  const all=readSnapshots();
+  const k=movementKey(row);
+  const now=Date.now();
+  const current={price:row.bestPrice,fairProb:row.consensusFairProb,ts:now,book:row.bestBook};
+
+  if(!all[k]){
+    all[k]={first:current,last:current};
+    saveSnapshots(all);
+    return {gate:"PENDING",first:current,current,pricePct:0,fairPp:0,note:"First local observation saved. Refresh later to measure movement."};
+  }
+
+  const first=all[k].first;
+  all[k].last=current;
+  saveSnapshots(all);
+
+  const pricePct=(current.price-first.price)/first.price;
+  const fairPp=current.fairProb-first.fairProb;
+
+  // Line movement is supportive when consensus probability rises without the
+  // available price deteriorating by more than ~3%.
+  let gate="WATCH";
+  if(fairPp>=0.015 && pricePct>=-0.03) gate="PASS";
+  else if(fairPp<=-0.02) gate="FAIL";
+
+  return {gate,first,current,pricePct,fairPp,note:"Observed on this browser since first seen; this is not the bookmaker opening line."};
 }
 
 async function load(){
@@ -196,10 +250,11 @@ async function load(){
     }
 
     content.innerHTML=data.rows.map(row=>{
+      const movement=observeMovement(row);
       const cls=row.status==="VALUE CANDIDATE"?"candidate":row.status==="WATCH"?"watch":"pass";
       const flags=row.flags.map(f=>`<span class="flag">${f.replaceAll("_"," ")}</span>`).join("");
       const gate=Object.entries(row.researchGate).map(([k,v])=>
-        `<div class="gate-item"><b>${gateLabel(k)}</b><span class="${gateClass(v)}">${v}</span></div>`
+        `<div class="gate-item"><b>${gateLabel(k)}</b><span class="${gateClass(k==="lineMovement"?movement.gate:v)}">${k==="lineMovement"?movement.gate:v}</span></div>`
       ).join("");
 
       const offers=row.offers.map((o,i)=>{
@@ -238,6 +293,17 @@ async function load(){
         </div>
 
 
+        <div class="movement-box">
+          <b>Observed market movement</b>
+          <div class="deep-grid">
+            <div class="deep-stat"><div class="label">First seen price</div><div class="v">$${movement.first.price.toFixed(2)}</div></div>
+            <div class="deep-stat"><div class="label">Current price</div><div class="v">$${movement.current.price.toFixed(2)}</div></div>
+            <div class="deep-stat"><div class="label">Movement gate</div><div class="v ${deepGateClass(movement.gate)}">${movement.gate}</div></div>
+          </div>
+          <div class="recent">Price change: ${(movement.pricePct*100).toFixed(1)}% · Consensus fair-probability change: ${(movement.fairPp*100).toFixed(1)}pp</div>
+          <div class="availability-note">${movement.note}</div>
+        </div>
+
         ${(row.sport==="nrl"||row.sport==="nrlw"||row.sport==="afl")?`
         <div class="deep">
           <button class="deep-btn"
@@ -245,7 +311,8 @@ async function load(){
             data-home="${row.homeTeam.replaceAll('"','&quot;')}"
             data-away="${row.awayTeam.replaceAll('"','&quot;')}"
             data-selection="${row.selection.replaceAll('"','&quot;')}"
-            data-date="${row.commenceTime.slice(0,10)}">Run deep research</button>
+            data-date="${row.commenceTime.slice(0,10)}"
+            data-market-fair-prob="${row.consensusFairProb}">Run deep research</button>
           <div class="deep-result"></div>
         </div>`:""}
 

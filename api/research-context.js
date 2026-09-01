@@ -127,6 +127,8 @@ function recentRecord(summaries, competitorId, max = 5) {
   return out;
 }
 
+function clamp(n, min, max) { return Math.max(min, Math.min(max, n)); }
+
 function recordSummary(games) {
   const wins = games.filter(g => g.result === "W").length;
   const losses = games.filter(g => g.result === "L").length;
@@ -205,6 +207,57 @@ module.exports = async function handler(req, res) {
 
   if (!key) {
     res.statusCode = 500;
+
+    // Research Projection V0.1
+    // This is deliberately conservative and untrained. It starts with the
+    // no-vig market probability as a strong prior, then applies small capped
+    // adjustments from recent form and H2H. It is a research screen, not a
+    // validated predictive model.
+    let projection = null;
+    let projectionGate = "PENDING";
+
+    if (
+      Number.isFinite(marketFairProb) &&
+      marketFairProb > 0 &&
+      marketFairProb < 1 &&
+      selectedRec &&
+      opponentRec
+    ) {
+      const selectedGames = selectedRec.wins + selectedRec.losses + selectedRec.draws;
+      const opponentGames = opponentRec.wins + opponentRec.losses + opponentRec.draws;
+
+      if (selectedGames >= 3 && opponentGames >= 3) {
+        const formDiff = selectedRec.winRate - opponentRec.winRate;
+        let h2hDiff = 0;
+        const h2hGamesCount = h2hRec.wins + h2hRec.losses + h2hRec.draws;
+        if (h2hGamesCount >= 3) h2hDiff = h2hRec.winRate - 0.5;
+
+        // Maximum form adjustment: ±8 percentage points.
+        const formAdj = clamp(formDiff * 0.10, -0.08, 0.08);
+        // Maximum H2H adjustment: ±3 percentage points.
+        const h2hAdj = clamp(h2hDiff * 0.06, -0.03, 0.03);
+
+        const modelProbability = clamp(marketFairProb + formAdj + h2hAdj, 0.03, 0.97);
+        const modelEdge = modelProbability - marketFairProb;
+
+        if (modelEdge >= 0.04 && formGate !== "FAIL") projectionGate = "PASS";
+        else if (modelEdge <= -0.03 || formGate === "FAIL") projectionGate = "FAIL";
+        else projectionGate = "WATCH";
+
+        projection = {
+          version: "Research Projection V0.1",
+          validated: false,
+          marketFairProbability: marketFairProb,
+          modelProbability,
+          modelEdge,
+          formAdjustment: formAdj,
+          h2hAdjustment: h2hAdj,
+          note:
+            "This projection is a conservative research heuristic anchored to the no-vig market. It has not yet been backtested or validated and must not independently qualify an Official Play."
+        };
+      }
+    }
+
     return res.json({
       error: "SPORTRADAR_API_KEY is not configured in Vercel.",
       setup: "Add SPORTRADAR_API_KEY as a Secret Production environment variable."
@@ -216,6 +269,7 @@ module.exports = async function handler(req, res) {
   const away = String(req.query.away || "");
   const selection = String(req.query.selection || "");
   const date = String(req.query.date || "").slice(0, 10);
+  const marketFairProb = Number(req.query.marketFairProb);
 
   if (!["nrl", "nrlw", "afl"].includes(sport)) {
     res.statusCode = 400;
@@ -344,6 +398,7 @@ module.exports = async function handler(req, res) {
       home: { id: homeComp.id, name: homeComp.name, recent: homeHistory, record: homeRec },
       away: { id: awayComp.id, name: awayComp.name, recent: awayHistory, record: awayRec },
       selectedTeam: selection,
+      projection,
       selectedRecord: selectedRec,
       opponentRecord: opponentRec,
       h2h: { recent: h2hGames, record: h2hRec },
@@ -352,7 +407,7 @@ module.exports = async function handler(req, res) {
         matchup: matchupGate,
         roleMinutes: "PENDING",
         injuriesTeamNews: availabilityGate,
-        projection: "PENDING",
+        projection: projectionGate,
         lineMovement: "PENDING",
       },
       note:
