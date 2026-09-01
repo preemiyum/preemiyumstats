@@ -332,9 +332,9 @@ async function loadPlayerHistory(btn){
 
     target.innerHTML=`
       <div class="deep-grid">
-        <div class="deep-stat"><div class="label">L5 hit rate</div><div class="v ${cls(d.l5)}">${hit(d.l5)}</div></div>
-        <div class="deep-stat"><div class="label">L10 hit rate</div><div class="v ${cls(d.l10)}">${hit(d.l10)}</div></div>
-        <div class="deep-stat"><div class="label">L20 hit rate</div><div class="v ${cls(d.l20)}">${hit(d.l20)}</div></div>
+        <div class="deep-stat"><div class="label">${d.l5?`L${d.l5.games} hit rate`:"L5 hit rate"}</div><div class="v ${cls(d.l5)}">${hit(d.l5)}</div></div>
+        <div class="deep-stat"><div class="label">${d.l10?`L${d.l10.games} hit rate`:"L10 hit rate"}</div><div class="v ${cls(d.l10)}">${hit(d.l10)}</div></div>
+        <div class="deep-stat"><div class="label">${d.l20?`L${d.l20.games} available`:"L20 available"}</div><div class="v ${cls(d.l20)}">${hit(d.l20)}</div></div>
         <div class="deep-stat"><div class="label">Recent avg</div><div class="v">${Number(d.average).toFixed(1)}</div></div>
         <div class="deep-stat"><div class="label">Role / minutes</div><div class="v pending">${d.roleMinutesGate}</div></div>
         <div class="deep-stat"><div class="label">Provider</div><div class="v">${d.provider}</div></div>

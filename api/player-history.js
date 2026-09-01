@@ -1,24 +1,34 @@
 function norm(s) {
   return String(s || "")
     .toLowerCase()
-    .replace(/[.'’\-]/g, " ")
+    .normalize("NFKD")
+    .replace(/[’'`]/g, "")
+    .replace(/[\-.,]/g, " ")
     .replace(/[^a-z0-9]+/g, " ")
     .replace(/\s+/g, " ")
     .trim();
 }
 
-function sameName(a, b) {
-  const na = norm(a);
-  const nb = norm(b);
-  if (!na || !nb) return false;
-  if (na === nb || na.includes(nb) || nb.includes(na)) return true;
+function nameTokens(s) {
+  return norm(s).split(" ").filter(Boolean);
+}
 
-  // Sportradar commonly uses "Last, First" while books use "First Last".
-  const aa = na.split(" ");
-  const bb = nb.split(" ");
-  return aa.length >= 2 && bb.length >= 2 &&
-    aa[0] === bb[bb.length-1] &&
-    aa[aa.length-1] === bb[0];
+function sameName(a, b) {
+  const aa = nameTokens(a);
+  const bb = nameTokens(b);
+  if (!aa.length || !bb.length) return false;
+
+  if (aa.length === bb.length && aa.every(t => bb.includes(t))) return true;
+
+  if (aa.length >= 2 && bb.length >= 2) {
+    const af = aa[0], al = aa[aa.length - 1];
+    const bf = bb[0], bl = bb[bb.length - 1];
+    if ((af === bf && al === bl) || (af === bl && al === bf)) return true;
+  }
+
+  const na = aa.join(" ");
+  const nb = bb.join(" ");
+  return na === nb || na.includes(nb) || nb.includes(na);
 }
 
 function sleep(ms) {
@@ -117,6 +127,43 @@ function scorerMatches(ev, player) {
     const ptype = String(p?.type || "").toLowerCase();
     return sameName(p?.name, player) && (!ptype || ptype === "scorer");
   });
+}
+
+
+function lineupPlayers(data) {
+  const comps = data?.competitors || data?.lineups || data?.sport_event?.competitors || [];
+  const out = [];
+  for (const c of comps || []) {
+    const players = c?.players || c?.lineup?.players || [];
+    for (const p of players || []) {
+      out.push({
+        teamId: c.id || null,
+        teamName: c.name || null,
+        id: p.id || null,
+        name: p.name || `${p.first_name || ""} ${p.last_name || ""}`.trim(),
+      });
+    }
+  }
+  return out;
+}
+
+async function confirmPlayerTeamFromLineup(base, key, eventId, teamIds, player) {
+  if (!eventId) return null;
+  try {
+    const data = await srFetch(
+      `${base}/sport_events/${encodeURIComponent(eventId)}/lineups.json`,
+      key
+    );
+    const players = lineupPlayers(data);
+    const found = players.find(p => sameName(p.name, player));
+    if (!found) return null;
+
+    const team = teamIds.find(t => t.id === found.teamId) ||
+      teamIds.find(t => sameName(t.name, found.teamName));
+    return team || null;
+  } catch {
+    return null;
+  }
 }
 
 async function rugbyLeagueTryHistory(base, key, games, teamId, player, limit = 10) {
@@ -275,11 +322,18 @@ module.exports = async function handler(req, res) {
           10
         );
 
-        // Accept the team if the player appears as a try scorer at least once OR
-        // the bookmaker/player name matches a named player in lineups/profile data later.
-        // For now, rows with all zeros are still useful only when the player belongs to
-        // the event team; because we cannot safely prove that here, require at least one try.
-        if (timelineRows.some(x => x.value > 0)) {
+        const confirmedTeam = await confirmPlayerTeamFromLineup(
+          base,
+          key,
+          match?.sport_event?.id || null,
+          teamIds,
+          player
+        );
+
+        if (
+          timelineRows.some(x => x.value > 0) ||
+          (confirmedTeam && confirmedTeam.id === team.id)
+        ) {
           found = timelineRows;
           foundTeam = team.name;
           break;
@@ -322,6 +376,7 @@ module.exports = async function handler(req, res) {
       l5:hit(5),
       l10:hit(10),
       l20:hit(20),
+      availableGames: found.length,
       recent:found.slice(0,20),
       roleMinutesGate:"PENDING",
       note:
