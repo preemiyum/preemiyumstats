@@ -89,6 +89,69 @@ function playerName(o) {
 
 
 async function oddsRequest({ key, sportKey, eventId, markets, regions, bookmakers }) {
+  const url = new URL(
+    `https://api.the-odds-api.com/v4/sports/${sportKey}/events/${encodeURIComponent(eventId)}/odds`
+  );
+
+  url.searchParams.set("apiKey", key);
+  url.searchParams.set("regions", regions);
+  url.searchParams.set("markets", markets.join(","));
+  url.searchParams.set("oddsFormat", "decimal");
+  url.searchParams.set("dateFormat", "iso");
+
+  if (bookmakers?.length) {
+    url.searchParams.set("bookmakers", bookmakers.join(","));
+  }
+
+  const r = await fetch(url.toString(), { cache: "no-store" });
+  const text = await r.text();
+
+  let data = null;
+  let parseError = null;
+
+  if (r.ok) {
+    try {
+      data = JSON.parse(text);
+    } catch (e) {
+      parseError = e?.message || String(e);
+    }
+  }
+
+  return {
+    ok: r.ok && data !== null,
+    upstreamOk: r.ok,
+    status: r.status,
+    text,
+    data,
+    parseError,
+    remaining: r.headers.get("x-requests-remaining"),
+    used: r.headers.get("x-requests-used"),
+    last: r.headers.get("x-requests-last"),
+  };
+}
+
+module.exports = async function handler(req, res) {
+  if (req.method !== "GET") {
+    res.statusCode = 405;
+    return res.end("Method Not Allowed");
+  }
+
+  const key = process.env.THE_ODDS_API_KEY;
+  if (!key) {
+    res.statusCode = 500;
+    return res.json({ error: "THE_ODDS_API_KEY is not configured." });
+  }
+
+  const sport = String(req.query.sport || "").toLowerCase();
+  const eventId = String(req.query.eventId || "");
+  const sportKey = SPORT_MAP[sport];
+  const markets = MARKETS[sport];
+
+  if (!sportKey || !markets || !eventId) {
+    res.statusCode = 400;
+    return res.json({ error: "Valid sport and eventId are required." });
+  }
+
   try {
     let response = await oddsRequest({
       key,
@@ -100,22 +163,27 @@ async function oddsRequest({ key, sportKey, eventId, markets, regions, bookmaker
     });
 
     if (!response.ok) {
-      res.statusCode = response.status;
+      res.statusCode = response.upstreamOk ? 502 : response.status;
       return res.json({
-        error: response.text || `The Odds API returned ${response.status}`,
+        error: response.parseError
+          ? `The Odds API returned a non-JSON response: ${response.text.slice(0, 250)}`
+          : (response.text || `The Odds API returned ${response.status}`),
         hint:
           response.status === 422 || response.status === 401
             ? "Your current Odds API plan or this event/bookmaker combination may not include these player-prop markets."
-            : null,
+            : response.parseError
+              ? "The upstream provider returned a temporary server response instead of JSON. Retry shortly."
+              : null,
       });
     }
 
     let event = response.data;
     let sourceMode = "AU_EXECUTABLE";
-    let auBookmakerCount = event?.bookmakers?.length || 0;
+    const auBookmakerCount = event?.bookmakers?.length || 0;
 
     const auMarketCount = (event?.bookmakers || []).reduce(
-      (n, b) => n + (b.markets?.length || 0), 0
+      (n, b) => n + (b.markets?.length || 0),
+      0
     );
 
     if (auMarketCount === 0 && (sport === "nba" || sport === "wnba")) {
@@ -128,7 +196,7 @@ async function oddsRequest({ key, sportKey, eventId, markets, regions, bookmaker
         bookmakers: RESEARCH_BOOKS,
       });
 
-      if (researchResponse.ok) {
+      if (researchResponse.ok && researchResponse.data) {
         event = researchResponse.data;
         response = researchResponse;
         sourceMode = "RESEARCH_ONLY_US";
@@ -254,11 +322,14 @@ async function oddsRequest({ key, sportKey, eventId, markets, regions, bookmaker
       auBookmakerCount,
       diagnostics: {
         bookmakersReturned: event?.bookmakers?.map(b => b.title) || [],
-        marketCount: (event?.bookmakers || []).reduce((n,b) => n + (b.markets?.length || 0), 0),
+        marketCount: (event?.bookmakers || []).reduce(
+          (n, b) => n + (b.markets?.length || 0),
+          0
+        ),
       },
       note:
         sourceMode === "RESEARCH_ONLY_US"
-          ? "No Australian player-prop market was returned for this event, so US books are shown for research consensus only. Do not publish those prices as an Australian executable bet."
+          ? "No Australian player-prop market was returned for this event, so US books are shown for research consensus only. Do not publish these prices as an Australian executable bet."
           : "Player prop odds are a market screen only until player history, role/minutes, team news and matchup context are attached.",
     });
   } catch (err) {
