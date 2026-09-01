@@ -89,12 +89,38 @@
     .release-lock{margin-top:9px;color:var(--gold);font-weight:800}
     @media(max-width:900px){.stats{grid-template-columns:1fr 1fr 1fr}.gate-grid{grid-template-columns:1fr 1fr}}
     @media(max-width:620px){h1{font-size:30px}.stats{grid-template-columns:1fr 1fr}.top{flex-direction:column}}
-  </style>
+  
+    .operator-board{margin:18px 0 22px;border:1px solid var(--line);border-radius:16px;background:#071421;padding:16px}
+    .operator-head{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;flex-wrap:wrap}
+    .operator-title{font-size:22px;font-weight:900}
+    .operator-sub{color:var(--muted);font-size:12px;margin-top:4px;max-width:760px}
+    .operator-actions{display:flex;gap:8px;flex-wrap:wrap}
+    .operator-actions button{padding:8px 11px}
+    .operator-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-top:14px}
+    .summary-tile{border:1px solid var(--line);border-radius:12px;background:#091a2c;padding:11px}
+    .summary-tile .n{font-size:24px;font-weight:900}
+    .operator-columns{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;margin-top:14px}
+    .shortlist-col{border:1px solid var(--line);border-radius:13px;background:#081625;padding:11px;min-height:100px}
+    .shortlist-col h3{font-size:14px;margin:0 0 8px}
+    .short-card{border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:8px;background:#06111f}
+    .short-player{font-weight:900;font-size:14px}
+    .short-meta{font-size:11px;color:var(--muted);margin-top:2px}
+    .short-score{font-size:18px;font-weight:900}
+    .short-reason{font-size:11px;color:var(--muted);margin-top:6px}
+    .short-lock{font-size:11px;color:var(--gold);font-weight:800;margin-top:6px}
+    .empty-short{font-size:12px;color:var(--muted);padding:8px 0}
+    .operator-note{font-size:11px;color:var(--muted);margin-top:10px}
+    @media(max-width:900px){
+      .operator-columns{grid-template-columns:1fr}
+      .operator-summary{grid-template-columns:repeat(2,minmax(0,1fr))}
+    }
+
+</style>
 </head>
 <body>
 <header>
   <div class="brand"><span>P</span> PREEMIYUM</div>
-  <div style="color:#9eafc5;font-size:13px">RESEARCH ENGINE — PHASE 4A</div>
+  <div style="color:#9eafc5;font-size:13px">RESEARCH ENGINE — PHASE 4B</div>
 </header>
 <main class="wrap">
   <h1>Preemiyum Research Engine</h1>
@@ -110,10 +136,53 @@
   </div>
 
   <div class="banner">
-    <strong>Important:</strong> Phase 4A adds a unified prop decision engine that combines price verification, history, role and line context into BET CANDIDATE / WATCH / NO BET.
+    <strong>Important:</strong> Phase 4B adds an operator shortlist that automatically organises researched props into BET CANDIDATES, WATCHLIST and NO BET / REJECTED.
     A selection can only become a <strong>VALUE CANDIDATE</strong> here. Official approval remains locked until
     form, role/minutes, injury/team news, matchup, projection and line-movement checks are added in Phase 2B.
   </div>
+
+
+  <section class="operator-board" id="operator-board">
+    <div class="operator-head">
+      <div>
+        <div class="operator-title">Operator Shortlist — Phase 4B</div>
+        <div class="operator-sub">
+          Research results are collected here automatically after a player-history check.
+          Only BET CANDIDATE can move to operator review; locked or failed props stay out of subscriber output.
+        </div>
+      </div>
+      <div class="operator-actions">
+        <button id="operator-refresh">Refresh shortlist</button>
+        <button id="operator-clear">Clear session</button>
+      </div>
+    </div>
+
+    <div class="operator-summary">
+      <div class="summary-tile"><div class="label">Bet candidates</div><div class="n ok" id="sum-candidate">0</div></div>
+      <div class="summary-tile"><div class="label">Watchlist</div><div class="n pending" id="sum-watch">0</div></div>
+      <div class="summary-tile"><div class="label">No bet / rejected</div><div class="n fail" id="sum-nobet">0</div></div>
+      <div class="summary-tile"><div class="label">Researched this session</div><div class="n" id="sum-total">0</div></div>
+    </div>
+
+    <div class="operator-columns">
+      <div class="shortlist-col">
+        <h3 class="ok">BET CANDIDATES</h3>
+        <div id="short-candidates"></div>
+      </div>
+      <div class="shortlist-col">
+        <h3 class="pending">WATCHLIST</h3>
+        <div id="short-watch"></div>
+      </div>
+      <div class="shortlist-col">
+        <h3 class="fail">NO BET / REJECTED</h3>
+        <div id="short-nobet"></div>
+      </div>
+    </div>
+
+    <div class="operator-note">
+      This shortlist is session-local and research-only. It does not publish to Telegram, Instagram or customers.
+    </div>
+  </section>
 
   <div id="meta" class="meta">Loading…</div>
   <div id="content" class="grid"></div>
@@ -129,6 +198,72 @@
 let currentSport="nrl";
 const content=document.getElementById("content");
 const meta=document.getElementById("meta");
+
+const operatorState = new Map();
+
+function operatorKey(x){
+  return [
+    x.sport||"",
+    x.player||"",
+    x.market||"",
+    x.line??"",
+    x.home||"",
+    x.away||"",
+    x.date||""
+  ].join("|");
+}
+
+function esc(x){
+  return String(x??"")
+    .replaceAll("&","&amp;")
+    .replaceAll("<","&lt;")
+    .replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;");
+}
+
+function renderShortCard(x){
+  const price=x.bestPrice!=null && Number.isFinite(Number(x.bestPrice))
+    ? "$"+Number(x.bestPrice).toFixed(2)
+    : "—";
+  const reason=(x.reasons||[]).join(" · ") || "No additional reason supplied.";
+  return `<div class="short-card">
+    <div style="display:flex;justify-content:space-between;gap:10px">
+      <div>
+        <div class="short-player">${esc(x.player)}</div>
+        <div class="short-meta">${esc((x.sport||"").toUpperCase())} · ${esc(x.market)}${x.line!==""&&x.line!=null?` · line ${esc(x.line)}`:""}</div>
+        <div class="short-meta">${esc(x.away)} @ ${esc(x.home)}${x.date?` · ${esc(x.date)}`:""}</div>
+        <div class="short-meta">Best AU price: ${price}${x.book?` · ${esc(x.book)}`:""}</div>
+      </div>
+      <div class="short-score">${esc(x.score)}/100</div>
+    </div>
+    <div class="short-reason">${esc(reason)}</div>
+    ${x.releaseLocked?`<div class="short-lock">🔒 RELEASE LOCKED</div>`:"<div class='short-lock'>Candidate requires operator approval.</div>"}
+  </div>`;
+}
+
+function renderOperatorBoard(){
+  const all=[...operatorState.values()].sort((a,b)=>(b.score||0)-(a.score||0));
+  const candidates=all.filter(x=>x.status==="BET CANDIDATE");
+  const watch=all.filter(x=>x.status==="WATCH");
+  const nobet=all.filter(x=>x.status==="NO BET");
+
+  document.getElementById("sum-candidate").textContent=candidates.length;
+  document.getElementById("sum-watch").textContent=watch.length;
+  document.getElementById("sum-nobet").textContent=nobet.length;
+  document.getElementById("sum-total").textContent=all.length;
+
+  document.getElementById("short-candidates").innerHTML =
+    candidates.length?candidates.map(renderShortCard).join(""):`<div class="empty-short">No cleared candidates yet.</div>`;
+  document.getElementById("short-watch").innerHTML =
+    watch.length?watch.map(renderShortCard).join(""):`<div class="empty-short">No watch items yet.</div>`;
+  document.getElementById("short-nobet").innerHTML =
+    nobet.length?nobet.map(renderShortCard).join(""):`<div class="empty-short">No rejected props yet.</div>`;
+}
+
+function addOperatorDecision(item){
+  operatorState.set(operatorKey(item),item);
+  renderOperatorBoard();
+}
 
 const pct=x=>(x*100).toFixed(1)+"%";
 const ev=x=>(x>=0?"+":"")+(x*100).toFixed(1)+"%";
@@ -348,6 +483,26 @@ async function loadPlayerHistory(btn){
     const d=await r.json();
     if(!r.ok) throw new Error(d.error||"Player history failed.");
 
+    if(d.unifiedDecision){
+      const card=btn.closest(".prop-card");
+      const bookNode=card?.querySelector(".prop-stats .deep-stat:nth-child(2) .v");
+      addOperatorDecision({
+        sport:btn.dataset.sport,
+        player:btn.dataset.player,
+        market:card?.querySelector(".prop-market")?.textContent?.split(" · line ")[0] || btn.dataset.marketKey,
+        line:btn.dataset.point,
+        home:btn.dataset.home,
+        away:btn.dataset.away,
+        date:btn.dataset.date,
+        bestPrice:btn.dataset.bestPrice,
+        book:bookNode?.textContent || "",
+        score:d.unifiedDecision.score,
+        status:d.unifiedDecision.status,
+        releaseLocked:d.unifiedDecision.releaseLocked,
+        reasons:d.unifiedDecision.reasons || []
+      });
+    }
+
     const hit=(x)=>x?`${x.hits}/${x.games} (${(x.rate*100).toFixed(0)}%)`:"N/A";
     const cls=(x)=>x&&x.rate>=.70?"hit-good":x&&x.rate<.50?"hit-bad":"";
 
@@ -363,9 +518,9 @@ async function loadPlayerHistory(btn){
 
       ${d.propScreen?`
       <div class="projection-box">
-        <b>PROP RESEARCH SCREEN</b>
+        <b>HISTORY / PRICE SCREEN</b>
         <div class="deep-grid">
-          <div class="deep-stat"><div class="label">Status</div><div class="v ${d.propScreen.status==="PROP RESEARCH CANDIDATE"?"ok":d.propScreen.status==="PASS"?"fail":"pending"}">${d.propScreen.status}</div></div>
+          <div class="deep-stat"><div class="label">Signal</div><div class="v">${d.propScreen.score!=null?`${d.propScreen.score>=70?"STRONG":d.propScreen.score>=50?"MIXED":"WEAK"}`:"—"}</div></div>
           <div class="deep-stat"><div class="label">Research score</div><div class="v">${d.propScreen.score??"—"}${d.propScreen.score!=null?" /100":""}</div></div>
           <div class="deep-stat"><div class="label">Raw implied</div><div class="v">${d.propScreen.rawImpliedProbability!=null?(d.propScreen.rawImpliedProbability*100).toFixed(1)+"%":"—"}</div></div>
           <div class="deep-stat"><div class="label">History edge</div><div class="v">${d.propScreen.historyEdge!=null?(d.propScreen.historyEdge>=0?"+":"")+(d.propScreen.historyEdge*100).toFixed(1)+"pp":"—"}</div></div>
@@ -651,6 +806,14 @@ document.querySelectorAll("[data-sport]").forEach(btn=>{
   });
 });
 document.getElementById("refresh").addEventListener("click",load);
+
+document.getElementById("operator-refresh").addEventListener("click",renderOperatorBoard);
+document.getElementById("operator-clear").addEventListener("click",()=>{
+  operatorState.clear();
+  renderOperatorBoard();
+});
+
+renderOperatorBoard();
 load();
 </script>
 </body>
