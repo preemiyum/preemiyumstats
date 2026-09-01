@@ -74,6 +74,10 @@
     .prop-history{margin-top:9px;border-top:1px solid var(--line);padding-top:9px}
     .small-btn{font-size:11px;padding:7px 9px}
     .hit-good{color:var(--green)}.hit-bad{color:var(--red)}
+    .advanced-box{margin-top:14px;border:1px solid var(--line);border-radius:12px;padding:12px;background:#06111f}
+    .advanced-card{border:1px solid var(--line);border-radius:12px;padding:12px;background:#081626;margin-top:10px}
+    .ev-good{color:var(--green)}.ev-watch{color:var(--gold)}
+    .role-result{margin-top:9px}
     @media(max-width:900px){.stats{grid-template-columns:1fr 1fr 1fr}.gate-grid{grid-template-columns:1fr 1fr}}
     @media(max-width:620px){h1{font-size:30px}.stats{grid-template-columns:1fr 1fr}.top{flex-direction:column}}
   </style>
@@ -81,7 +85,7 @@
 <body>
 <header>
   <div class="brand"><span>P</span> PREEMIYUM</div>
-  <div style="color:#9eafc5;font-size:13px">RESEARCH ENGINE — PHASE 3B</div>
+  <div style="color:#9eafc5;font-size:13px">RESEARCH ENGINE — PHASE 3C + 3D</div>
 </header>
 <main class="wrap">
   <h1>Preemiyum Research Engine</h1>
@@ -97,7 +101,7 @@
   </div>
 
   <div class="banner">
-    <strong>Important:</strong> Phase 3B adds current-lineup role validation and a conservative prop research screen on top of player markets and history.
+    <strong>Important:</strong> Phase 3C adds deeper NRL performance props; Phase 3D adds NBA/WNBA minutes, usage and injury-aware role research.
     A selection can only become a <strong>VALUE CANDIDATE</strong> here. Official approval remains locked until
     form, role/minutes, injury/team news, matchup, projection and line-movement checks are added in Phase 2B.
   </div>
@@ -366,6 +370,116 @@ async function loadPlayerHistory(btn){
   }
 }
 
+
+async function loadAdvancedProps(btn){
+  const sport=btn.dataset.sport;
+  const target=btn.parentElement.querySelector(".advanced-box");
+  btn.disabled=true;
+  btn.textContent=sport==="nrl"||sport==="nrlw"?"Loading NRL performance props…":"Loading advanced basketball props…";
+  target.innerHTML="";
+
+  try{
+    const q=new URLSearchParams({
+      sport,
+      home:btn.dataset.home,
+      away:btn.dataset.away
+    });
+    const r=await fetch("/api/advanced-props?"+q.toString(),{cache:"no-store"});
+    const d=await r.json();
+    if(!r.ok) throw new Error(d.error||"Advanced props failed.");
+
+    const rows=d.rows.slice(0,40);
+    target.innerHTML=`
+      <div><strong>${d.phase==="3C"?"NRL PERFORMANCE LAB — PHASE 3C":"BASKETBALL ADVANCED PROPS — PHASE 3D"}</strong></div>
+      <div class="recent">${d.note}${d.creditsRemaining?` · Krok credits remaining: ${d.creditsRemaining}`:""}</div>
+      ${rows.length?rows.map(p=>{
+        const ev=Number.isFinite(p.evPercentage)?p.evPercentage:null;
+        const hist=p.historicalStats||{};
+        const histRate=
+          hist.hit_rate_over ?? hist.hit_rate ?? hist.hitRate ??
+          hist.hit_rate_over_percentage ?? null;
+        const histDisplay=histRate==null?"—":(
+          Number(histRate)<=1 ? (Number(histRate)*100).toFixed(0)+"%" :
+          Number(histRate).toFixed(0)+"%"
+        );
+
+        return `<div class="advanced-card">
+          <div class="prop-top">
+            <div>
+              <div class="prop-player">${p.player}</div>
+              <div class="prop-market">${p.market} · ${p.side||"—"}${p.line!=null?` ${p.line}`:""}</div>
+            </div>
+            <div class="${ev!=null&&ev>=3?"ev-good":"ev-watch"}"><b>${ev!=null?(ev>=0?"+":"")+ev.toFixed(1)+"% EV":"EV —"}</b></div>
+          </div>
+          <div class="prop-stats">
+            <div class="deep-stat"><div class="label">Price</div><div class="v">${Number.isFinite(p.odds)?"$"+p.odds.toFixed(2):"—"}</div></div>
+            <div class="deep-stat"><div class="label">Book</div><div class="v">${p.bookmaker||"—"}</div></div>
+            <div class="deep-stat"><div class="label">Line</div><div class="v">${p.line??"—"}</div></div>
+            <div class="deep-stat"><div class="label">Historical hit</div><div class="v">${histDisplay}</div></div>
+            <div class="deep-stat"><div class="label">Market</div><div class="v">${p.market}</div></div>
+          </div>
+          ${(sport==="nba"||sport==="wnba")?`
+          <div class="role-result">
+            <button class="small-btn basketball-role-btn"
+              data-league="${sport}"
+              data-player="${String(p.player).replaceAll('"','&quot;')}"
+              data-home="${btn.dataset.home.replaceAll('"','&quot;')}"
+              data-away="${btn.dataset.away.replaceAll('"','&quot;')}"
+              data-date="${btn.dataset.date}">Check minutes / usage / injury</button>
+            <div class="basketball-role-result"></div>
+          </div>`:""}
+        </div>`;
+      }).join(""):`<div class="recent">No matching advanced props returned for this event right now.</div>`}`;
+
+    target.querySelectorAll(".basketball-role-btn").forEach(b=>{
+      b.addEventListener("click",()=>loadBasketballRole(b));
+    });
+  }catch(e){
+    target.innerHTML=`<div class="err">${String(e.message||e)}</div>`;
+  }finally{
+    btn.disabled=false;
+    btn.textContent="Load advanced props";
+  }
+}
+
+async function loadBasketballRole(btn){
+  const target=btn.parentElement.querySelector(".basketball-role-result");
+  btn.disabled=true;
+  btn.textContent="Checking role…";
+  try{
+    const q=new URLSearchParams({
+      league:btn.dataset.league,
+      player:btn.dataset.player,
+      home:btn.dataset.home,
+      away:btn.dataset.away,
+      date:btn.dataset.date
+    });
+    const r=await fetch("/api/basketball-role?"+q.toString(),{cache:"no-store"});
+    const d=await r.json();
+    if(!r.ok) throw new Error(d.error||"Basketball role research failed.");
+
+    const m=d.metrics||{};
+    const injury=d.injury||{};
+    target.innerHTML=`
+      <div class="deep-grid">
+        <div class="deep-stat"><div class="label">Avg minutes</div><div class="v">${m.avgMinutes!=null?Number(m.avgMinutes).toFixed(1):"—"}</div></div>
+        <div class="deep-stat"><div class="label">Usage %</div><div class="v">${m.usagePct!=null?Number(m.usagePct).toFixed(1)+"%":"—"}</div></div>
+        <div class="deep-stat"><div class="label">Starter share</div><div class="v">${m.starterShare!=null?(m.starterShare*100).toFixed(0)+"%":"—"}</div></div>
+        <div class="deep-stat"><div class="label">Role gate</div><div class="v ${deepGateClass(d.roleGate)}">${d.roleGate}</div></div>
+        <div class="deep-stat"><div class="label">Injury gate</div><div class="v ${deepGateClass(injury.gate)}">${injury.gate||"—"}</div></div>
+        <div class="deep-stat"><div class="label">Position</div><div class="v">${d.player?.position||"—"}</div></div>
+      </div>
+      <div class="recent">Season averages: ${m.points??"—"} pts · ${m.rebounds??"—"} reb · ${m.assists??"—"} ast · ${m.gamesStarted??"—"}/${m.gamesPlayed??"—"} starts</div>
+      ${injury.info?.injuries?.length?`<div class="availability-note">${injury.info.injuries.map(i=>`${i.status||""} ${i.description||""} ${i.comment||""}`).join(" · ")}</div>`:""}
+      <div class="availability-note">${d.note}</div>`;
+  }catch(e){
+    target.innerHTML=`<div class="err" style="margin-top:8px">${String(e.message||e)}</div>`;
+  }finally{
+    btn.disabled=false;
+    btn.textContent="Check minutes / usage / injury";
+  }
+}
+
 async function load(){
   meta.textContent="Loading live "+currentSport.toUpperCase()+" market…";
   content.innerHTML="";
@@ -437,6 +551,17 @@ async function load(){
           <div class="availability-note">${movement.note}</div>
         </div>
 
+        ${(["nrl","nrlw","nba","wnba"].includes(row.sport))?`
+        <div class="deep">
+          <button class="advanced-props-btn"
+            data-sport="${row.sport}"
+            data-event-id="${row.eventId}"
+            data-home="${row.homeTeam.replaceAll('"','&quot;')}"
+            data-away="${row.awayTeam.replaceAll('"','&quot;')}"
+            data-date="${row.commenceTime.slice(0,10)}">Load advanced props</button>
+          <div class="advanced-box"></div>
+        </div>`:""}
+
         <div class="deep">
           <button class="props-btn"
             data-sport="${row.sport}"
@@ -467,6 +592,7 @@ async function load(){
     }).join("");
     document.querySelectorAll(".deep-btn").forEach(b=>b.addEventListener("click",()=>runDeepResearch(b)));
     document.querySelectorAll(".props-btn").forEach(b=>b.addEventListener("click",()=>loadPlayerProps(b)));
+    document.querySelectorAll(".advanced-props-btn").forEach(b=>b.addEventListener("click",()=>loadAdvancedProps(b)));
   }catch(e){
     meta.textContent="Research feed error";
     content.innerHTML=`<div class="err">${String(e.message||e)}</div>`;
