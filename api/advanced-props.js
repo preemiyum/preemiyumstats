@@ -145,9 +145,8 @@ async function krokFetch(path, key, params = {}) {
   return {
     data: JSON.parse(body),
     headers: {
-      rateLimitRemaining: headers?.rateLimitRemaining || null,
-      creditsRemaining: headers?.creditsRemaining || null,
-      sourceMode,
+      rateLimitRemaining: r.headers.get("x-ratelimit-remaining"),
+      creditsRemaining: r.headers.get("x-credits-remaining"),
     }
   };
 }
