@@ -81,7 +81,7 @@
 <body>
 <header>
   <div class="brand"><span>P</span> PREEMIYUM</div>
-  <div style="color:#9eafc5;font-size:13px">RESEARCH ENGINE — PHASE 3A</div>
+  <div style="color:#9eafc5;font-size:13px">RESEARCH ENGINE — PHASE 3B</div>
 </header>
 <main class="wrap">
   <h1>Preemiyum Research Engine</h1>
@@ -97,7 +97,7 @@
   </div>
 
   <div class="banner">
-    <strong>Important:</strong> Phase 3A adds on-demand player-prop markets, best-price comparison and recent player-stat hit-rate research.
+    <strong>Important:</strong> Phase 3B adds current-lineup role validation and a conservative prop research screen on top of player markets and history.
     A selection can only become a <strong>VALUE CANDIDATE</strong> here. Official approval remains locked until
     form, role/minutes, injury/team news, matchup, projection and line-movement checks are added in Phase 2B.
   </div>
@@ -259,7 +259,7 @@ async function loadPlayerProps(btn){
     if(!r.ok) throw new Error(d.error||"Player props failed.");
 
     target.innerHTML=`
-      <div><strong>PLAYER PROPS — PHASE 3A</strong></div>
+      <div><strong>PLAYER PROPS — PHASE 3B</strong></div>
       <div class="recent">${d.note} ${d.requestsRemaining?`· Odds API credits remaining: ${d.requestsRemaining}`:""}</div>
       <div class="props-list">
       ${d.rows.slice(0,30).map(p=>{
@@ -291,7 +291,8 @@ async function loadPlayerProps(btn){
               data-point="${p.point??""}"
               data-home="${btn.dataset.home.replaceAll('"','&quot;')}"
               data-away="${btn.dataset.away.replaceAll('"','&quot;')}"
-              data-date="${btn.dataset.date}">Research player history</button>
+              data-date="${btn.dataset.date}"
+              data-best-price="${price??""}">Research player history</button>
             <div class="history-result"></div>
           </div>`:`<div class="recent">Detailed NBA/WNBA player history requires the basketball-statistics module planned next.</div>`}
         </div>`;
@@ -321,7 +322,8 @@ async function loadPlayerHistory(btn){
       point:btn.dataset.point,
       home:btn.dataset.home,
       away:btn.dataset.away,
-      date:btn.dataset.date
+      date:btn.dataset.date,
+      bestPrice:btn.dataset.bestPrice
     });
     const r=await fetch("/api/player-history?"+q.toString(),{cache:"no-store"});
     const d=await r.json();
@@ -334,11 +336,26 @@ async function loadPlayerHistory(btn){
       <div class="deep-grid">
         <div class="deep-stat"><div class="label">${d.l5?`L${d.l5.games} hit rate`:"L5 hit rate"}</div><div class="v ${cls(d.l5)}">${hit(d.l5)}</div></div>
         <div class="deep-stat"><div class="label">${d.l10?`L${d.l10.games} hit rate`:"L10 hit rate"}</div><div class="v ${cls(d.l10)}">${hit(d.l10)}</div></div>
-        <div class="deep-stat"><div class="label">${d.l20?`L${d.l20.games} available`:"L20 available"}</div><div class="v ${cls(d.l20)}">${hit(d.l20)}</div></div>
+        <div class="deep-stat"><div class="label">${d.availableGames?`All available (${d.availableGames})`:"All available"}</div><div class="v ${cls(d.l20)}">${hit(d.l20)}</div></div>
         <div class="deep-stat"><div class="label">Recent avg</div><div class="v">${Number(d.average).toFixed(1)}</div></div>
-        <div class="deep-stat"><div class="label">Role / minutes</div><div class="v pending">${d.roleMinutesGate}</div></div>
-        <div class="deep-stat"><div class="label">Provider</div><div class="v">${d.provider}</div></div>
+        <div class="deep-stat"><div class="label">Role gate</div><div class="v ${deepGateClass(d.roleMinutesGate)}">${d.roleMinutesGate}</div></div>
+        <div class="deep-stat"><div class="label">Current role</div><div class="v">${d.role?`${d.role.starter?"Starter":"Named"}${d.role.position?` · ${d.role.position}`:""}`:"Not published"}</div></div>
       </div>
+
+      ${d.propScreen?`
+      <div class="projection-box">
+        <b>PROP RESEARCH SCREEN</b>
+        <div class="deep-grid">
+          <div class="deep-stat"><div class="label">Status</div><div class="v ${d.propScreen.status==="PROP RESEARCH CANDIDATE"?"ok":d.propScreen.status==="PASS"?"fail":"pending"}">${d.propScreen.status}</div></div>
+          <div class="deep-stat"><div class="label">Research score</div><div class="v">${d.propScreen.score??"—"}${d.propScreen.score!=null?" /100":""}</div></div>
+          <div class="deep-stat"><div class="label">Raw implied</div><div class="v">${d.propScreen.rawImpliedProbability!=null?(d.propScreen.rawImpliedProbability*100).toFixed(1)+"%":"—"}</div></div>
+          <div class="deep-stat"><div class="label">History edge</div><div class="v">${d.propScreen.historyEdge!=null?(d.propScreen.historyEdge>=0?"+":"")+(d.propScreen.historyEdge*100).toFixed(1)+"pp":"—"}</div></div>
+          <div class="deep-stat"><div class="label">Lineup role</div><div class="v ${deepGateClass(d.roleMinutesGate)}">${d.roleMinutesGate}</div></div>
+          <div class="deep-stat"><div class="label">Provider</div><div class="v">${d.provider}</div></div>
+        </div>
+        <div class="availability-note">${d.propScreen.note}</div>
+      </div>`:""}
+
       <div class="recent">${d.recent.slice(0,10).map(x=>`${x.value} v ${x.opponent}`).join(" · ")}</div>
       <div class="availability-note">${d.note}</div>`;
   }catch(e){

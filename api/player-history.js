@@ -201,6 +201,103 @@ async function rugbyLeagueTryHistory(base, key, games, teamId, player, limit = 1
   return out;
 }
 
+
+function currentRoleFromLineup(data, player) {
+  const players = lineupPlayers(data);
+  const p = players.find(x => sameName(x.name, player));
+  if (!p) return null;
+
+  // Re-read the richer raw player object where possible.
+  const comps = data?.competitors || data?.lineups || data?.sport_event?.competitors || [];
+  for (const c of comps || []) {
+    const pp = c?.players || c?.lineup?.players || [];
+    const raw = pp.find(x => sameName(
+      x.name || `${x.first_name || ""} ${x.last_name || ""}`.trim(),
+      player
+    ));
+    if (raw) {
+      return {
+        named: true,
+        starter: raw.starter === true,
+        position: raw.type || raw.position || null,
+        jerseyNumber: raw.jersey_number ?? null,
+        teamId: c.id || null,
+        teamName: c.name || null,
+      };
+    }
+  }
+
+  return {
+    named: true,
+    starter: null,
+    position: null,
+    jerseyNumber: null,
+    teamId: p.teamId || null,
+    teamName: p.teamName || null,
+  };
+}
+
+function roleGateFromInfo(info) {
+  if (!info) return "PENDING";
+  if (info.starter === true) return "PASS";
+  if (info.named === true) return "WATCH";
+  return "PENDING";
+}
+
+function rawImplied(price) {
+  return price > 1 ? 1 / price : null;
+}
+
+function conservativePropScreen({ historyRate, bestPrice, roleGate, sampleSize }) {
+  const implied = rawImplied(bestPrice);
+  if (!Number.isFinite(historyRate) || !Number.isFinite(implied)) {
+    return {
+      status: "PENDING",
+      score: null,
+      rawImpliedProbability: implied,
+      historyEdge: null,
+      note: "Insufficient price/history inputs."
+    };
+  }
+
+  const historyEdge = historyRate - implied;
+
+  // Conservative research score only; not a predictive probability model.
+  let score = 50;
+  score += Math.max(-30, Math.min(25, historyEdge * 120));
+  if (sampleSize >= 10) score += 5;
+  else if (sampleSize < 5) score -= 8;
+
+  if (roleGate === "PASS") score += 8;
+  else if (roleGate === "WATCH") score -= 2;
+  else score -= 8;
+
+  score = Math.max(0, Math.min(100, Math.round(score)));
+
+  let status = "PASS";
+  if (
+    historyEdge >= 0.08 &&
+    sampleSize >= 8 &&
+    roleGate === "PASS" &&
+    score >= 70
+  ) status = "PROP RESEARCH CANDIDATE";
+  else if (
+    historyEdge >= 0 &&
+    sampleSize >= 5 &&
+    roleGate !== "PENDING" &&
+    score >= 55
+  ) status = "WATCH";
+
+  return {
+    status,
+    score,
+    rawImpliedProbability: implied,
+    historyEdge,
+    note:
+      "This compares recent historical hit rate with the raw implied probability of the displayed best price. It is not a no-vig fair-value model and is not an Official Play decision."
+  };
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== "GET") {
     res.statusCode = 405;
@@ -219,6 +316,7 @@ module.exports = async function handler(req, res) {
   const player = String(req.query.player || "");
   const marketKey = String(req.query.marketKey || "");
   const point = Number(req.query.point);
+  const bestPrice = Number(req.query.bestPrice);
   const home = String(req.query.home || "");
   const away = String(req.query.away || "");
   const date = String(req.query.date || "").slice(0,10);
@@ -261,6 +359,19 @@ module.exports = async function handler(req, res) {
 
     const comps = match?.sport_event?.competitors || [];
     const teamIds = comps.map(c => ({ id:c.id, name:c.name })).filter(x => x.id);
+
+    let currentRole = null;
+    let currentLineupError = null;
+    try {
+      const currentLineup = await srFetch(
+        `${base}/sport_events/${encodeURIComponent(match?.sport_event?.id)}/lineups.json`,
+        key
+      );
+      currentRole = currentRoleFromLineup(currentLineup, player);
+    } catch (e) {
+      currentLineupError = e?.message || String(e);
+    }
+    const roleMinutesGate = roleGateFromInfo(currentRole);
 
     let found = [];
     let foundTeam = null;
@@ -363,8 +474,16 @@ module.exports = async function handler(req, res) {
       return { hits, games:g.length, rate:hits/g.length };
     };
 
+    const primarySample = hit(Math.min(10, found.length));
+    const propScreen = conservativePropScreen({
+      historyRate: primarySample?.rate ?? null,
+      bestPrice,
+      roleGate: roleMinutesGate,
+      sampleSize: primarySample?.games ?? 0,
+    });
+
     return res.json({
-      phase:"3A",
+      phase:"3B",
       provider:"Sportradar",
       sport,
       player,
@@ -378,11 +497,14 @@ module.exports = async function handler(req, res) {
       l20:hit(20),
       availableGames: found.length,
       recent:found.slice(0,20),
-      roleMinutesGate:"PENDING",
+      roleMinutesGate,
+      role: currentRole,
+      currentLineupError,
+      propScreen,
       note:
         sport.startsWith("nrl") && metric === "tries"
-          ? "NRL/NRLW try history is reconstructed from Sportradar historical Sport Event Timeline scorer events when basic player summaries do not contain player tries. Role/minutes remains pending."
-          : "This module measures recent player-stat performance at the current line. Role/minutes remains pending until a validated role/minutes source is connected."
+          ? "NRL/NRLW try history is reconstructed from Sportradar historical Sport Event Timeline scorer events. The role gate uses current lineup starter/named status where Sportradar has published a lineup. Exact minutes are not available in this feed."
+          : "This module measures recent player-stat performance at the current line. The role gate uses current lineup starter/named status where available; exact minutes require a separate source."
     });
   } catch (err) {
     console.error(err);
