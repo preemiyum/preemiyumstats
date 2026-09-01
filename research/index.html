@@ -64,6 +64,16 @@
     .projection-box{margin-top:10px;border:1px solid var(--line);border-radius:10px;padding:11px;background:#06111f}
     .movement-box{margin-top:10px;border:1px solid var(--line);border-radius:10px;padding:11px;background:#06111f}
     .movement-good{color:var(--green)}.movement-bad{color:var(--red)}.movement-neutral{color:var(--gold)}
+    .props-box{margin-top:14px;border:1px solid var(--line);border-radius:12px;padding:12px;background:#06111f}
+    .props-list{display:grid;gap:10px;margin-top:10px}
+    .prop-card{border:1px solid var(--line);border-radius:12px;padding:12px;background:#081626}
+    .prop-top{display:flex;justify-content:space-between;gap:12px}
+    .prop-player{font-weight:900;font-size:17px}
+    .prop-market{color:var(--muted);font-size:12px}
+    .prop-stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:9px}
+    .prop-history{margin-top:9px;border-top:1px solid var(--line);padding-top:9px}
+    .small-btn{font-size:11px;padding:7px 9px}
+    .hit-good{color:var(--green)}.hit-bad{color:var(--red)}
     @media(max-width:900px){.stats{grid-template-columns:1fr 1fr 1fr}.gate-grid{grid-template-columns:1fr 1fr}}
     @media(max-width:620px){h1{font-size:30px}.stats{grid-template-columns:1fr 1fr}.top{flex-direction:column}}
   </style>
@@ -71,7 +81,7 @@
 <body>
 <header>
   <div class="brand"><span>P</span> PREEMIYUM</div>
-  <div style="color:#9eafc5;font-size:13px">RESEARCH ENGINE — PHASE 2D</div>
+  <div style="color:#9eafc5;font-size:13px">RESEARCH ENGINE — PHASE 3A</div>
 </header>
 <main class="wrap">
   <h1>Preemiyum Research Engine</h1>
@@ -87,7 +97,7 @@
   </div>
 
   <div class="banner">
-    <strong>Important:</strong> Phase 2D adds a conservative market-anchored projection and observed price movement on top of price, form, matchup and lineup research.
+    <strong>Important:</strong> Phase 3A adds on-demand player-prop markets, best-price comparison and recent player-stat hit-rate research.
     A selection can only become a <strong>VALUE CANDIDATE</strong> here. Official approval remains locked until
     form, role/minutes, injury/team news, matchup, projection and line-movement checks are added in Phase 2B.
   </div>
@@ -233,6 +243,112 @@ function observeMovement(row){
   return {gate,first,current,pricePct,fairPp,note:"Observed on this browser since first seen; this is not the bookmaker opening line."};
 }
 
+
+async function loadPlayerProps(btn){
+  const sport=btn.dataset.sport;
+  const eventId=btn.dataset.eventId;
+  const target=btn.parentElement.querySelector(".props-box");
+  btn.disabled=true;
+  btn.textContent="Loading player props…";
+  target.innerHTML="";
+
+  try{
+    const q=new URLSearchParams({sport,eventId});
+    const r=await fetch("/api/player-props?"+q.toString(),{cache:"no-store"});
+    const d=await r.json();
+    if(!r.ok) throw new Error(d.error||"Player props failed.");
+
+    target.innerHTML=`
+      <div><strong>PLAYER PROPS — PHASE 3A</strong></div>
+      <div class="recent">${d.note} ${d.requestsRemaining?`· Odds API credits remaining: ${d.requestsRemaining}`:""}</div>
+      <div class="props-list">
+      ${d.rows.slice(0,30).map(p=>{
+        const price=p.bestOver?.price||p.bestYes?.price||null;
+        const book=p.bestOver?.book||p.bestYes?.book||"—";
+        const fair=p.fairOver==null?"—":(p.fairOver*100).toFixed(1)+"%";
+        const pev=p.priceEV==null?"—":(p.priceEV>=0?"+":"")+(p.priceEV*100).toFixed(1)+"%";
+        const canResearch=["afl","nrl","nrlw"].includes(sport);
+        return `<div class="prop-card">
+          <div class="prop-top">
+            <div>
+              <div class="prop-player">${p.player}</div>
+              <div class="prop-market">${p.market}${p.point!=null?` · line ${p.point}`:""}</div>
+            </div>
+            <div class="${p.status==="PROP WATCH"?"watch":"pass"}"><b>${p.status}</b></div>
+          </div>
+          <div class="prop-stats">
+            <div class="deep-stat"><div class="label">Best price</div><div class="v">${price?"$"+price.toFixed(2):"—"}</div></div>
+            <div class="deep-stat"><div class="label">Best book</div><div class="v">${book}</div></div>
+            <div class="deep-stat"><div class="label">Fair over</div><div class="v">${fair}</div></div>
+            <div class="deep-stat"><div class="label">Price EV</div><div class="v">${pev}</div></div>
+            <div class="deep-stat"><div class="label">Books</div><div class="v">${p.books}</div></div>
+          </div>
+          ${canResearch?`<div class="prop-history">
+            <button class="small-btn player-history-btn"
+              data-sport="${sport}"
+              data-player="${String(p.player).replaceAll('"','&quot;')}"
+              data-market-key="${p.marketKey}"
+              data-point="${p.point??""}"
+              data-home="${btn.dataset.home.replaceAll('"','&quot;')}"
+              data-away="${btn.dataset.away.replaceAll('"','&quot;')}"
+              data-date="${btn.dataset.date}">Research player history</button>
+            <div class="history-result"></div>
+          </div>`:`<div class="recent">Detailed NBA/WNBA player history requires the basketball-statistics module planned next.</div>`}
+        </div>`;
+      }).join("")}
+      </div>`;
+
+    target.querySelectorAll(".player-history-btn").forEach(b=>{
+      b.addEventListener("click",()=>loadPlayerHistory(b));
+    });
+  }catch(e){
+    target.innerHTML=`<div class="err">${String(e.message||e)}</div>`;
+  }finally{
+    btn.disabled=false;
+    btn.textContent="Load player props";
+  }
+}
+
+async function loadPlayerHistory(btn){
+  const target=btn.parentElement.querySelector(".history-result");
+  btn.disabled=true;
+  btn.textContent="Researching…";
+  try{
+    const q=new URLSearchParams({
+      sport:btn.dataset.sport,
+      player:btn.dataset.player,
+      marketKey:btn.dataset.marketKey,
+      point:btn.dataset.point,
+      home:btn.dataset.home,
+      away:btn.dataset.away,
+      date:btn.dataset.date
+    });
+    const r=await fetch("/api/player-history?"+q.toString(),{cache:"no-store"});
+    const d=await r.json();
+    if(!r.ok) throw new Error(d.error||"Player history failed.");
+
+    const hit=(x)=>x?`${x.hits}/${x.games} (${(x.rate*100).toFixed(0)}%)`:"N/A";
+    const cls=(x)=>x&&x.rate>=.70?"hit-good":x&&x.rate<.50?"hit-bad":"";
+
+    target.innerHTML=`
+      <div class="deep-grid">
+        <div class="deep-stat"><div class="label">L5 hit rate</div><div class="v ${cls(d.l5)}">${hit(d.l5)}</div></div>
+        <div class="deep-stat"><div class="label">L10 hit rate</div><div class="v ${cls(d.l10)}">${hit(d.l10)}</div></div>
+        <div class="deep-stat"><div class="label">L20 hit rate</div><div class="v ${cls(d.l20)}">${hit(d.l20)}</div></div>
+        <div class="deep-stat"><div class="label">Recent avg</div><div class="v">${Number(d.average).toFixed(1)}</div></div>
+        <div class="deep-stat"><div class="label">Role / minutes</div><div class="v pending">${d.roleMinutesGate}</div></div>
+        <div class="deep-stat"><div class="label">Provider</div><div class="v">${d.provider}</div></div>
+      </div>
+      <div class="recent">${d.recent.slice(0,10).map(x=>`${x.value} v ${x.opponent}`).join(" · ")}</div>
+      <div class="availability-note">${d.note}</div>`;
+  }catch(e){
+    target.innerHTML=`<div class="err" style="margin-top:8px">${String(e.message||e)}</div>`;
+  }finally{
+    btn.disabled=false;
+    btn.textContent="Research player history";
+  }
+}
+
 async function load(){
   meta.textContent="Loading live "+currentSport.toUpperCase()+" market…";
   content.innerHTML="";
@@ -304,6 +420,16 @@ async function load(){
           <div class="availability-note">${movement.note}</div>
         </div>
 
+        <div class="deep">
+          <button class="props-btn"
+            data-sport="${row.sport}"
+            data-event-id="${row.eventId}"
+            data-home="${row.homeTeam.replaceAll('"','&quot;')}"
+            data-away="${row.awayTeam.replaceAll('"','&quot;')}"
+            data-date="${row.commenceTime.slice(0,10)}">Load player props</button>
+          <div class="props-box"></div>
+        </div>
+
         ${(row.sport==="nrl"||row.sport==="nrlw"||row.sport==="afl")?`
         <div class="deep">
           <button class="deep-btn"
@@ -323,6 +449,7 @@ async function load(){
       </article>`;
     }).join("");
     document.querySelectorAll(".deep-btn").forEach(b=>b.addEventListener("click",()=>runDeepResearch(b)));
+    document.querySelectorAll(".props-btn").forEach(b=>b.addEventListener("click",()=>loadPlayerProps(b)));
   }catch(e){
     meta.textContent="Research feed error";
     content.innerHTML=`<div class="err">${String(e.message||e)}</div>`;
