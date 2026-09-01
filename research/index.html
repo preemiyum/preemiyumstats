@@ -580,19 +580,44 @@ async function loadPlayerProps(btn){
   }
 }
 
+function sameTeamName(a,b){
+  const norm=x=>String(x||"").toLowerCase().replace(/[^a-z0-9]+/g," ").trim();
+  const aa=norm(a), bb=norm(b);
+  return aa===bb || aa.includes(bb) || bb.includes(aa);
+}
+
+async function resolveEventIdForItem(item){
+  if(item.eventId) return item.eventId;
+
+  const r=await fetch("/api/market-board?sport="+encodeURIComponent(item.sport),{cache:"no-store"});
+  const d=await r.json();
+  if(!r.ok) throw new Error(d.error||"Could not refresh event list.");
+
+  const rows=d.rows||d.selections||[];
+  const found=rows.find(x=>{
+    const sameDate=!item.date || String(x.commenceTime||"").slice(0,10)===String(item.date).slice(0,10);
+    const direct=sameTeamName(x.homeTeam,item.home) && sameTeamName(x.awayTeam,item.away);
+    const reverse=sameTeamName(x.homeTeam,item.away) && sameTeamName(x.awayTeam,item.home);
+    return sameDate && (direct||reverse);
+  });
+
+  if(!found?.eventId) throw new Error("Could not recover the event ID from the current market board.");
+  return found.eventId;
+}
+
 function matchPropRow(rows,item){
   return (rows||[]).find(p=>{
     const samePlayer=String(p.player||"").toLowerCase()===String(item.player||"").toLowerCase();
-    const sameMarket=String(p.marketKey||"")===String(item.marketKey||"");
-    const samePoint=String(p.point??"")===String(item.point??"");
+    const sameMarket=!item.marketKey || String(p.marketKey||"")===String(item.marketKey||"");
+    const samePoint=item.point==null || item.point==="" || String(p.point??"")===String(item.point??"");
     return samePlayer && sameMarket && samePoint;
   }) || null;
 }
 
 async function recheckSavedWatchItem(item){
-  if(!item.eventId) throw new Error("Missing event ID for saved item.");
+  const eventId=await resolveEventIdForItem(item);
 
-  const propsQ=new URLSearchParams({sport:item.sport,eventId:item.eventId});
+  const propsQ=new URLSearchParams({sport:item.sport,eventId});
   const pr=await fetch("/api/player-props?"+propsQ.toString(),{cache:"no-store"});
   const pd=await pr.json();
   if(!pr.ok) throw new Error(pd.error||"Player props refresh failed.");
@@ -607,11 +632,14 @@ async function recheckSavedWatchItem(item){
   const priceEV=fresh.priceEV??null;
   const books=fresh.books??0;
 
+  const freshMarketKey=fresh.marketKey || item.marketKey || "";
+  const freshPoint=fresh.point ?? item.point ?? "";
+
   const histQ=new URLSearchParams({
     sport:item.sport,
     player:item.player,
-    marketKey:item.marketKey,
-    point:item.point??"",
+    marketKey:freshMarketKey,
+    point:freshPoint,
     home:item.home,
     away:item.away,
     date:item.date,
@@ -628,6 +656,9 @@ async function recheckSavedWatchItem(item){
 
   addOperatorDecision({
     ...item,
+    eventId,
+    marketKey:freshMarketKey,
+    point:freshPoint,
     bestPrice,
     book,
     fairOver,
@@ -663,10 +694,16 @@ async function recheckWatchlist(){
         ok++;
       }catch(e){
         failed++;
+        const msg=String(e?.message||e);
         console.warn("Watch re-check failed",watch[i],e);
+        statusEl.textContent=`Could not refresh ${watch[i].player}: ${msg}`;
       }
     }
-    statusEl.textContent=`WATCH re-check complete: ${ok} updated${failed?`, ${failed} could not be refreshed`:""}.`;
+    if(!failed){
+      statusEl.textContent=`WATCH re-check complete: ${ok} updated.`;
+    }else if(ok){
+      statusEl.textContent=`WATCH re-check complete: ${ok} updated, ${failed} could not be refreshed.`;
+    }
   }finally{
     btn.disabled=false;
     renderOperatorBoard();
@@ -706,6 +743,12 @@ async function loadPlayerHistory(btn){
         home:btn.dataset.home,
         away:btn.dataset.away,
         date:btn.dataset.date,
+        eventId:btn.dataset.eventId || "",
+        marketKey:btn.dataset.marketKey || "",
+        point:btn.dataset.point || "",
+        fairOver:btn.dataset.fairOver || "",
+        priceEV:btn.dataset.priceEv || "",
+        books:btn.dataset.books || "",
         bestPrice:btn.dataset.bestPrice,
         book:bookNode?.textContent || "",
         score:d.unifiedDecision.score,
