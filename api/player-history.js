@@ -94,6 +94,66 @@ function eventDate(summary) {
   return summary?.sport_event?.start_time || null;
 }
 
+
+function timelineEvents(data) {
+  return data?.timeline || data?.events || data?.sport_event_timeline || [];
+}
+
+function playerRefs(ev) {
+  if (Array.isArray(ev?.players)) return ev.players;
+  if (ev?.player) return [ev.player];
+  return [];
+}
+
+function isTryEvent(ev) {
+  const method = String(ev?.method || "").toLowerCase();
+  const type = String(ev?.type || "").toLowerCase();
+  return method === "try" || type === "try" ||
+    (type === "score_change" && method === "try");
+}
+
+function scorerMatches(ev, player) {
+  return playerRefs(ev).some(p => {
+    const ptype = String(p?.type || "").toLowerCase();
+    return sameName(p?.name, player) && (!ptype || ptype === "scorer");
+  });
+}
+
+async function rugbyLeagueTryHistory(base, key, games, teamId, player, limit = 10) {
+  const out = [];
+
+  for (const s of games) {
+    const eventId = s?.sport_event?.id;
+    if (!eventId) continue;
+
+    try {
+      const timeline = await srFetch(
+        `${base}/sport_events/${encodeURIComponent(eventId)}/timeline.json`,
+        key
+      );
+
+      const events = timelineEvents(timeline);
+      const tries = events.filter(ev => isTryEvent(ev) && scorerMatches(ev, player)).length;
+
+      out.push({
+        date: eventDate(s),
+        opponent: (() => {
+          const cc = s?.sport_event?.competitors || [];
+          return cc.find(c => c.id !== teamId)?.name || "Unknown";
+        })(),
+        value: tries,
+      });
+
+      if (out.length >= limit) break;
+    } catch (e) {
+      // Some historical matches may not have timeline coverage at the user's access level.
+      continue;
+    }
+  }
+
+  return out;
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== "GET") {
     res.statusCode = 405;
@@ -195,6 +255,38 @@ module.exports = async function handler(req, res) {
       }
     }
 
+    if (!found.length && sport.startsWith("nrl") && metric === "tries") {
+      // Rugby League Player Summaries do not expose player `tries` as a match-stat field.
+      // Sportradar does expose try scorers in Sport Event Timeline events, so reconstruct
+      // player try history from the scoring timeline instead.
+      for (const team of teamIds) {
+        const raw = await srFetch(
+          `${base}/competitors/${encodeURIComponent(team.id)}/summaries.json`,
+          key
+        );
+        const games = summaries(raw).slice(0, 12);
+
+        const timelineRows = await rugbyLeagueTryHistory(
+          base,
+          key,
+          games,
+          team.id,
+          player,
+          10
+        );
+
+        // Accept the team if the player appears as a try scorer at least once OR
+        // the bookmaker/player name matches a named player in lineups/profile data later.
+        // For now, rows with all zeros are still useful only when the player belongs to
+        // the event team; because we cannot safely prove that here, require at least one try.
+        if (timelineRows.some(x => x.value > 0)) {
+          found = timelineRows;
+          foundTeam = team.name;
+          break;
+        }
+      }
+    }
+
     if (!found.length) {
       res.statusCode = 404;
       return res.json({
@@ -202,7 +294,7 @@ module.exports = async function handler(req, res) {
           `No ${metric} history was found for ${player} in the current Sportradar feed.`,
         note:
           sport.startsWith("nrl")
-            ? "Rugby League try-scoring history may not be included in the basic player-stat feed for this competition/access level."
+            ? "The system also checked historical Sportradar event timelines for named try-scorer events. No reliable player match was found in the available trial coverage."
             : "Player naming or trial coverage may differ."
       });
     }
@@ -233,7 +325,9 @@ module.exports = async function handler(req, res) {
       recent:found.slice(0,20),
       roleMinutesGate:"PENDING",
       note:
-        "This module measures recent player-stat performance at the current line. Role/minutes remains pending until a validated role/minutes source is connected."
+        sport.startsWith("nrl") && metric === "tries"
+          ? "NRL/NRLW try history is reconstructed from Sportradar historical Sport Event Timeline scorer events when basic player summaries do not contain player tries. Role/minutes remains pending."
+          : "This module measures recent player-stat performance at the current line. Role/minutes remains pending until a validated role/minutes source is connected."
     });
   } catch (err) {
     console.error(err);
