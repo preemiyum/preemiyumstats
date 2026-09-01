@@ -424,7 +424,206 @@ function directNrlTeamListCandidates(eventDateValue, sport) {
   ));
 }
 
+
+function htmlEntityDecode(s) {
+  return String(s || "")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#34;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/gi, "'")
+    .replace(/&amp;/gi, "&")
+    .replace(/&lt;/gi, "<")
+    .replace(/&gt;/gi, ">")
+    .replace(/&#x27;/gi, "'")
+    .replace(/&#x2F;/gi, "/");
+}
+
+function getTeamPlayersFromQData(rawHtml) {
+  const html = String(rawHtml || "");
+  const tag = html.match(/<[^>]+id=["']vue-match-centre["'][^>]*>/i)?.[0];
+  if (!tag) return null;
+
+  let value = null;
+  const dq = tag.match(/\bq-data="([^"]*)"/i);
+  const sq = tag.match(/\bq-data='([^']*)'/i);
+  if (dq) value = dq[1];
+  else if (sq) value = sq[1];
+  if (!value) return null;
+
+  value = htmlEntityDecode(value);
+  let data;
+  try {
+    data = JSON.parse(value);
+  } catch {
+    // A few deployments double-escape the JSON payload.
+    try {
+      data = JSON.parse(value.replace(/\\"/g, '"'));
+    } catch {
+      return null;
+    }
+  }
+
+  const match = data?.match || data?.data?.match || data?.model?.match || null;
+  if (!match) return null;
+  return {
+    homeTeam: match.homeTeam || null,
+    awayTeam: match.awayTeam || null,
+    raw: match,
+  };
+}
+
+function teamNick(teamObj) {
+  return norm(teamObj?.nickName || teamObj?.name || teamObj?.teamName || "");
+}
+
+function playerDisplayName(p) {
+  return [p?.firstName, p?.lastName].filter(Boolean).join(" ")
+    || p?.name || p?.displayName || p?.playerName || "";
+}
+
+function structuredNrlRoleFromTeams(teamData, player, home, away) {
+  if (!teamData) return null;
+  const wanted = norm(player);
+  const sides = [
+    { side: "home", team: teamData.homeTeam, expected: home },
+    { side: "away", team: teamData.awayTeam, expected: away },
+  ];
+
+  for (const s of sides) {
+    if (!s.team) continue;
+    const nick = teamNick(s.team);
+    const expectedTokens = nameTokens(s.expected);
+    const expectedShort = expectedTokens[expectedTokens.length - 1] || "";
+    if (nick && expectedShort && !(nick.includes(expectedShort) || expectedShort.includes(nick))) continue;
+
+    const players = Array.isArray(s.team.players) ? s.team.players : [];
+    for (const p of players) {
+      if (!sameName(playerDisplayName(p), player)) continue;
+      const number = Number(p?.number ?? p?.jerseyNumber ?? p?.shirtNumber);
+      const pos = p?.position || p?.positionName || "";
+      const onField = p?.isOnField;
+
+      if ((onField === true) || (Number.isFinite(number) && number >= 1 && number <= 13)) {
+        return {
+          gate: "PASS",
+          detail: `Official NRL match-centre team sheet confirms ${player} in the starting 13${Number.isFinite(number) ? ` (#${number})` : ""}${pos ? ` as ${pos}` : ""}.`,
+          number: Number.isFinite(number) ? number : null,
+          position: pos || null,
+          isOnField: onField ?? null,
+        };
+      }
+      if (Number.isFinite(number) && number >= 14 && number <= 17) {
+        return {
+          gate: "WATCH",
+          detail: `Official NRL match-centre team sheet lists ${player} on the interchange (#${number}).`,
+          number,
+          position: pos || null,
+          isOnField: onField ?? null,
+        };
+      }
+      return {
+        gate: "PENDING",
+        detail: `Official NRL match-centre team sheet names ${player}, but starting status is not release-safe.`,
+        number: Number.isFinite(number) ? number : null,
+        position: pos || null,
+        isOnField: onField ?? null,
+      };
+    }
+  }
+  return null;
+}
+
+async function officialNrlMatchCentreEvidence({ sport, player, home, away, date }) {
+  if (sport !== "nrl") return null; // NRLW uses a different competition id; keep conservative for now.
+  const d = isoDateOnly(date);
+  if (!d) return null;
+  const year = d.getUTCFullYear();
+  const round = estimateNrlRound(d);
+  if (!round) return null;
+
+  const drawUrl = `https://www.nrl.com/draw/data?competition=111&round=${round}&season=${year}`;
+  let draw;
+  try {
+    const txt = await publicText(drawUrl);
+    draw = JSON.parse(txt);
+  } catch (e) {
+    return {
+      provider: "NRL.com Match Centre",
+      sourceType: "official_match_centre",
+      url: drawUrl,
+      checkedAt: new Date().toISOString(),
+      gate: "PENDING",
+      detail: `Official NRL draw-data lookup failed safely: ${e?.message || String(e)}`,
+    };
+  }
+
+  const fixtures = draw?.fixtures || draw?.data?.fixtures || [];
+  const homeShort = nameTokens(home).slice(-1)[0] || "";
+  const awayShort = nameTokens(away).slice(-1)[0] || "";
+
+  const fixture = fixtures.find(f => {
+    const h = norm(f?.homeTeam?.nickName || f?.homeTeam?.name || "");
+    const a = norm(f?.awayTeam?.nickName || f?.awayTeam?.name || "");
+    return (h === homeShort || h.includes(homeShort) || homeShort.includes(h))
+        && (a === awayShort || a.includes(awayShort) || awayShort.includes(a));
+  });
+
+  if (!fixture?.matchCentreUrl) {
+    return {
+      provider: "NRL.com Match Centre",
+      sourceType: "official_match_centre",
+      url: drawUrl,
+      checkedAt: new Date().toISOString(),
+      gate: "PENDING",
+      detail: "Official NRL draw data loaded, but the matching fixture/match-centre URL was not resolved.",
+    };
+  }
+
+  const matchUrl = absoluteUrl("https://www.nrl.com/", fixture.matchCentreUrl);
+  try {
+    const raw = await publicText(matchUrl);
+    const teamData = getTeamPlayersFromQData(raw);
+    const evidence = structuredNrlRoleFromTeams(teamData, player, home, away);
+    if (evidence) {
+      return {
+        provider: "NRL.com Match Centre",
+        sourceType: "official_match_centre",
+        url: matchUrl,
+        checkedAt: new Date().toISOString(),
+        ...evidence,
+      };
+    }
+    return {
+      provider: "NRL.com Match Centre",
+      sourceType: "official_match_centre",
+      url: matchUrl,
+      checkedAt: new Date().toISOString(),
+      gate: "PENDING",
+      detail: teamData
+        ? "Official NRL match-centre team data loaded, but this player could not be matched release-safely."
+        : "Official NRL match-centre page loaded, but its structured q-data team payload was not found.",
+    };
+  } catch (e) {
+    return {
+      provider: "NRL.com Match Centre",
+      sourceType: "official_match_centre",
+      url: matchUrl,
+      checkedAt: new Date().toISOString(),
+      gate: "PENDING",
+      detail: `Official NRL match-centre fetch failed safely: ${e?.message || String(e)}`,
+    };
+  }
+}
+
 async function officialNrlRoleEvidence({ sport, player, home, away, date }) {
+  // Phase 4G.4: prefer the official structured match-centre team sheet.
+  const matchCentreEvidence = await officialNrlMatchCentreEvidence({
+    sport, player, home, away, date
+  });
+  if (matchCentreEvidence?.gate === "PASS" || matchCentreEvidence?.gate === "WATCH") {
+    return matchCentreEvidence;
+  }
+
   const homePage = "https://www.nrl.com/";
   const wantsNrlw = sport === "nrlw";
   const linkRegex = wantsNrlw
@@ -498,6 +697,9 @@ async function officialNrlRoleEvidence({ sport, player, home, away, date }) {
       continue;
     }
   }
+  if (matchCentreEvidence) {
+    return matchCentreEvidence;
+  }
   return {
     provider: "NRL.com",
     sourceType: "official_team_list",
@@ -506,7 +708,7 @@ async function officialNrlRoleEvidence({ sport, player, home, away, date }) {
     gate: "PENDING",
     detail: diagnostics.length
       ? `Official NRL lookup attempted ${links.length} page(s) but could not parse release-safe team evidence. First issue: ${diagnostics[0]}`
-      : `Official NRL lookup checked ${links.length} candidate page(s), but fixture/player text was not found in the server-rendered page. Phase 4G.3 now also inspects embedded page JSON.`,
+      : `Official NRL lookup checked ${links.length} candidate page(s), but fixture/player text was not found in the server-rendered page.`,
   };
 }
 
@@ -989,7 +1191,7 @@ module.exports = async function handler(req, res) {
     });
 
     return res.json({
-      phase:"4G.3",
+      phase:"4G.4",
       provider:"Sportradar",
       sport,
       player,
