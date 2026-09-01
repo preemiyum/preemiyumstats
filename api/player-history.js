@@ -440,7 +440,9 @@ function htmlEntityDecode(s) {
 
 function getTeamPlayersFromQData(rawHtml) {
   const html = String(rawHtml || "");
-  const tag = html.match(/<[^>]+id=["']vue-match-centre["'][^>]*>/i)?.[0];
+  const tag =
+    html.match(/<[^>]+id=["']vue-match-centre["'][^>]*>/i)?.[0] ||
+    html.match(/<[^>]+q-data=["'][^"']+["'][^>]*id=["']vue-match-centre["'][^>]*>/i)?.[0];
   if (!tag) return null;
 
   let value = null;
@@ -533,53 +535,64 @@ function structuredNrlRoleFromTeams(teamData, player, home, away) {
   return null;
 }
 
-async function officialNrlMatchCentreEvidence({ sport, player, home, away, date }) {
-  if (sport !== "nrl") return null; // NRLW uses a different competition id; keep conservative for now.
+
+function slugifyNrlTeam(name) {
+  const aliases = {
+    "cronulla sutherland sharks": "sharks",
+    "melbourne storm": "storm",
+    "wests tigers": "wests-tigers",
+    "penrith panthers": "panthers",
+    "canterbury bankstown bulldogs": "bulldogs",
+    "brisbane broncos": "broncos",
+    "north queensland cowboys": "cowboys",
+    "gold coast titans": "titans",
+    "new zealand warriors": "warriors",
+    "manly warringah sea eagles": "sea-eagles",
+    "south sydney rabbitohs": "rabbitohs",
+    "sydney roosters": "roosters",
+    "parramatta eels": "eels",
+    "st george illawarra dragons": "dragons",
+    "newcastle knights": "knights",
+    "canberra raiders": "raiders",
+    "dolphins": "dolphins",
+  };
+  const n = norm(name);
+  if (aliases[n]) return aliases[n];
+  const toks = nameTokens(name);
+  if (!toks.length) return "";
+  return toks.slice(-2).join("-").replace(/\s+/g, "-");
+}
+
+function directNrlMatchCentreUrl({ home, away, date }) {
   const d = isoDateOnly(date);
   if (!d) return null;
   const year = d.getUTCFullYear();
   const round = estimateNrlRound(d);
-  if (!round) return null;
+  const h = slugifyNrlTeam(home);
+  const a = slugifyNrlTeam(away);
+  if (!round || !h || !a) return null;
+  return `https://www.nrl.com/draw/nrl-premiership/${year}/round-${round}/${h}-v-${a}/`;
+}
 
-  const drawUrl = `https://www.nrl.com/draw/data?competition=111&round=${round}&season=${year}`;
-  let draw;
-  try {
-    const txt = await publicText(drawUrl);
-    draw = JSON.parse(txt);
-  } catch (e) {
+async function officialNrlMatchCentreEvidence({ sport, player, home, away, date }) {
+  if (sport !== "nrl") return null; // NRLW remains conservative for now.
+  const d = isoDateOnly(date);
+  if (!d) return null;
+
+  // Phase 4G.5: bypass /draw/data entirely because Vercel can receive HTML
+  // instead of JSON from that internal endpoint. NRL match-centre URLs are
+  // deterministic from season, round and team slugs.
+  const matchUrl = directNrlMatchCentreUrl({ home, away, date });
+  if (!matchUrl) {
     return {
       provider: "NRL.com Match Centre",
       sourceType: "official_match_centre",
-      url: drawUrl,
+      url: null,
       checkedAt: new Date().toISOString(),
       gate: "PENDING",
-      detail: `Official NRL draw-data lookup failed safely: ${e?.message || String(e)}`,
+      detail: "Could not construct the official NRL match-centre URL from this fixture.",
     };
   }
-
-  const fixtures = draw?.fixtures || draw?.data?.fixtures || [];
-  const homeShort = nameTokens(home).slice(-1)[0] || "";
-  const awayShort = nameTokens(away).slice(-1)[0] || "";
-
-  const fixture = fixtures.find(f => {
-    const h = norm(f?.homeTeam?.nickName || f?.homeTeam?.name || "");
-    const a = norm(f?.awayTeam?.nickName || f?.awayTeam?.name || "");
-    return (h === homeShort || h.includes(homeShort) || homeShort.includes(h))
-        && (a === awayShort || a.includes(awayShort) || awayShort.includes(a));
-  });
-
-  if (!fixture?.matchCentreUrl) {
-    return {
-      provider: "NRL.com Match Centre",
-      sourceType: "official_match_centre",
-      url: drawUrl,
-      checkedAt: new Date().toISOString(),
-      gate: "PENDING",
-      detail: "Official NRL draw data loaded, but the matching fixture/match-centre URL was not resolved.",
-    };
-  }
-
-  const matchUrl = absoluteUrl("https://www.nrl.com/", fixture.matchCentreUrl);
   try {
     const raw = await publicText(matchUrl);
     const teamData = getTeamPlayersFromQData(raw);
@@ -1191,7 +1204,7 @@ module.exports = async function handler(req, res) {
     });
 
     return res.json({
-      phase:"4G.4",
+      phase:"4G.5",
       provider:"Sportradar",
       sport,
       player,
