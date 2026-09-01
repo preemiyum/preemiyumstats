@@ -237,6 +237,221 @@ function currentRoleFromLineup(data, player) {
   };
 }
 
+
+function stripHtml(html) {
+  return String(html || "")
+    .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&#39;/gi, "'")
+    .replace(/&quot;/gi, '"')
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+async function publicText(url) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 8000);
+  try {
+    const r = await fetch(url, {
+      headers: {
+        "user-agent": "Mozilla/5.0 (compatible; PreemiyumResearch/1.0)",
+        accept: "text/html,application/xhtml+xml",
+      },
+      redirect: "follow",
+      cache: "no-store",
+      signal: controller.signal,
+    });
+    const text = await r.text();
+    if (!r.ok) throw new Error(`Official source ${r.status}`);
+    return text;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function absoluteUrl(base, href) {
+  try { return new URL(href, base).toString(); }
+  catch { return null; }
+}
+
+function unique(arr) {
+  return [...new Set(arr.filter(Boolean))];
+}
+
+function discoverLinks(html, base, regex) {
+  const out = [];
+  const hrefRe = /href=["']([^"']+)["']/gi;
+  let m;
+  while ((m = hrefRe.exec(html))) {
+    const href = m[1];
+    if (regex.test(href)) out.push(absoluteUrl(base, href));
+    regex.lastIndex = 0;
+  }
+  return unique(out);
+}
+
+function escRe(s) {
+  return String(s || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function looseNamePattern(name) {
+  const parts = nameTokens(name).map(escRe);
+  return parts.length ? parts.join("[\\s'’\\-]+") : "";
+}
+
+function looseTeamPattern(name) {
+  const parts = nameTokens(name).map(escRe);
+  return parts.length ? parts.join("\\s+") : "";
+}
+
+function officialNrlRoleFromText(text, player, team) {
+  const p = looseNamePattern(player);
+  const t = looseTeamPattern(team);
+  if (!p || !t) return null;
+
+  const starter = new RegExp(
+    `(?:fullback|winger|centre|five\\s*eighth|halfback|prop|hooker|2nd\\s*row|second\\s*row|lock)\\s+for\\s+${t}\\s+is\\s+number\\s+(?:[1-9]|1[0-3])\\s+${p}`,
+    "i"
+  );
+  const bench = new RegExp(
+    `interchange\\s+for\\s+${t}\\s+is\\s+number\\s+(?:1[4-7])\\s+${p}`,
+    "i"
+  );
+  const reserve = new RegExp(
+    `(?:replacement|reserve)\\s+for\\s+${t}\\s+is\\s+number\\s+(?:1[8-9]|2[0-9])\\s+${p}`,
+    "i"
+  );
+
+  if (starter.test(text)) return { gate: "PASS", detail: "Official NRL team list shows the player in the starting 13." };
+  if (bench.test(text)) return { gate: "WATCH", detail: "Official NRL team list shows the player on the interchange bench." };
+  if (reserve.test(text)) return { gate: "PENDING", detail: "Official NRL team list shows the player among reserves/replacements, not a confirmed starter." };
+
+  const playerOnly = new RegExp(`\\b${p}\\b`, "i");
+  if (playerOnly.test(text)) return { gate: "WATCH", detail: "Player is named on the official NRL page, but starting status could not be parsed confidently." };
+  return null;
+}
+
+async function officialNrlRoleEvidence({ sport, player, home, away }) {
+  const homePage = "https://www.nrl.com/";
+  const html = await publicText(homePage);
+  const wantsNrlw = sport === "nrlw";
+  const linkRegex = wantsNrlw
+    ? /\/news\/\d{4}\/\d{2}\/\d{2}\/nrlw-team-lists-round-\d+\/?/i
+    : /\/news\/\d{4}\/\d{2}\/\d{2}\/nrl-team-lists-round-\d+\/?/i;
+
+  const links = discoverLinks(html, homePage, linkRegex).slice(0, 5);
+  for (const url of links) {
+    try {
+      const page = await publicText(url);
+      const text = stripHtml(page);
+      const n = norm(text);
+      const homeN = norm(home);
+      const awayN = norm(away);
+      if (!n.includes(homeN) || !n.includes(awayN)) continue;
+
+      const a = officialNrlRoleFromText(text, player, home);
+      const b = officialNrlRoleFromText(text, player, away);
+      const evidence = a || b;
+      if (evidence) {
+        return {
+          provider: "NRL.com",
+          sourceType: "official_team_list",
+          url,
+          checkedAt: new Date().toISOString(),
+          ...evidence,
+        };
+      }
+      return {
+        provider: "NRL.com",
+        sourceType: "official_team_list",
+        url,
+        checkedAt: new Date().toISOString(),
+        gate: "PENDING",
+        detail: "Official current-round team-list page was found, but the player could not be confirmed in a release-safe role.",
+      };
+    } catch {
+      continue;
+    }
+  }
+  return {
+    provider: "NRL.com",
+    sourceType: "official_team_list",
+    url: null,
+    checkedAt: new Date().toISOString(),
+    gate: "PENDING",
+    detail: "A matching current official NRL/NRLW team-list page could not be resolved automatically.",
+  };
+}
+
+async function officialAflRoleEvidence({ player, home, away }) {
+  // AFL team articles are less structurally consistent than NRL.com team lists.
+  // We therefore use AFL.com.au only as conservative secondary evidence and never
+  // promote a player to PASS from page-name presence alone.
+  const homePage = "https://www.afl.com.au/";
+  try {
+    const html = await publicText(homePage);
+    const links = discoverLinks(
+      html,
+      homePage,
+      /\/news\/\d+\/[^"']*(?:teams|team-whispers|finals-teams)[^"']*\/?/i
+    ).slice(0, 8);
+
+    for (const url of links) {
+      try {
+        const page = await publicText(url);
+        const text = stripHtml(page);
+        const n = norm(text);
+        if (!n.includes(norm(player))) continue;
+        if (!(n.includes(norm(home)) || n.includes(norm(away)))) continue;
+
+        return {
+          provider: "AFL.com.au",
+          sourceType: "official_team_news",
+          url,
+          checkedAt: new Date().toISOString(),
+          gate: "WATCH",
+          detail: "Player is present on an official AFL team/news page, but Phase 4G does not infer a final starting role from article text alone.",
+        };
+      } catch {
+        continue;
+      }
+    }
+  } catch {}
+
+  return {
+    provider: "AFL.com.au",
+    sourceType: "official_team_news",
+    url: null,
+    checkedAt: new Date().toISOString(),
+    gate: "PENDING",
+    detail: "No release-safe official AFL team confirmation was resolved automatically.",
+  };
+}
+
+async function officialRoleEvidence({ sport, player, home, away }) {
+  try {
+    if (sport === "nrl" || sport === "nrlw") {
+      return await officialNrlRoleEvidence({ sport, player, home, away });
+    }
+    if (sport === "afl") {
+      return await officialAflRoleEvidence({ player, home, away });
+    }
+  } catch (e) {
+    return {
+      provider: sport === "afl" ? "AFL.com.au" : "NRL.com",
+      sourceType: "official_team_news",
+      url: null,
+      checkedAt: new Date().toISOString(),
+      gate: "PENDING",
+      detail: `Official-source lookup failed safely: ${e?.message || String(e)}`,
+    };
+  }
+  return null;
+}
+
 function roleGateFromInfo(info) {
   if (!info) return "PENDING";
   if (info.starter === true) return "PASS";
@@ -347,7 +562,7 @@ function unifiedPropDecision({
   // A prop can never become BET CANDIDATE while role is PENDING or price quality
   // is unverified/insufficient. This deliberately favors no-release over forced bets.
   const mandatoryPending =
-    roleGate === "PENDING" ||
+    roleGate !== "PASS" ||
     priceGate === "PENDING" ||
     priceGate === "INSUFFICIENT";
 
@@ -404,6 +619,7 @@ function unifiedPropDecision({
   if (priceGate === "INSUFFICIENT") reasons.push("price not verified across enough bookmakers");
   if (priceGate === "FAIL") reasons.push("current price value failed");
   if (roleGate === "PENDING") reasons.push("current role/lineup not yet confirmed");
+  if (roleGate === "WATCH") reasons.push("player is named but starting/role evidence is not strong enough for release");
   if (roleGate === "FAIL") reasons.push("role/injury gate failed");
   if (historyGate === "FAIL") reasons.push("recent historical hit rate is weak");
   if (averageGate === "FAIL") reasons.push("recent average is below the current line");
@@ -422,7 +638,7 @@ function unifiedPropDecision({
     avgVsLine,
     reasons,
     policy:
-      "BET CANDIDATE is blocked whenever mandatory role or price-verification gates are unresolved. This is a research classification, not a guarantee of a winning bet."
+      "BET CANDIDATE requires a PASS role gate plus verified price evidence. WATCH/PENDING role evidence remains release-locked. This is a research classification, not a guarantee of a winning bet."
   };
 }
 
@@ -502,7 +718,29 @@ module.exports = async function handler(req, res) {
     } catch (e) {
       currentLineupError = e?.message || String(e);
     }
-    const roleMinutesGate = roleGateFromInfo(currentRole);
+    let roleMinutesGate = roleGateFromInfo(currentRole);
+    let officialRoleEvidenceResult = null;
+
+    if (roleMinutesGate !== "PASS") {
+      officialRoleEvidenceResult = await officialRoleEvidence({
+        sport,
+        player,
+        home,
+        away,
+      });
+
+      // Secondary official evidence may improve PENDING -> WATCH, or for the
+      // structured NRL/NRLW starting-13 pattern, -> PASS. It never downgrades
+      // an existing Sportradar PASS.
+      if (officialRoleEvidenceResult?.gate === "PASS") {
+        roleMinutesGate = "PASS";
+      } else if (
+        officialRoleEvidenceResult?.gate === "WATCH" &&
+        roleMinutesGate === "PENDING"
+      ) {
+        roleMinutesGate = "WATCH";
+      }
+    }
 
     let found = [];
     let foundTeam = null;
@@ -626,7 +864,7 @@ module.exports = async function handler(req, res) {
     });
 
     return res.json({
-      phase:"4A",
+      phase:"4G",
       provider:"Sportradar",
       sport,
       player,
@@ -643,6 +881,7 @@ module.exports = async function handler(req, res) {
       roleMinutesGate,
       role: currentRole,
       currentLineupError,
+      officialRoleEvidence: officialRoleEvidenceResult,
       propScreen,
       marketContext: {
         fairOver: Number.isFinite(fairOver) ? fairOver : null,

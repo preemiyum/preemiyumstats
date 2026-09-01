@@ -170,7 +170,7 @@
 <body>
 <header>
   <div class="brand"><span>P</span> PREEMIYUM</div>
-  <div style="color:#9eafc5;font-size:13px">RESEARCH ENGINE — PHASE 4F</div>
+  <div style="color:#9eafc5;font-size:13px">RESEARCH ENGINE — PHASE 4G</div>
 </header>
 <main class="wrap">
   <h1>Preemiyum Research Engine</h1>
@@ -195,7 +195,7 @@
   <section class="operator-board" id="operator-board">
     <div class="operator-head">
       <div>
-        <div class="operator-title">Role Resolver Board — Phase 4F</div>
+        <div class="operator-title">Official Evidence Board — Phase 4G</div>
         <div class="operator-sub">
           Research results are collected here automatically after a player-history check.
           Only BET CANDIDATE can move to operator review; locked or failed props stay out of subscriber output.
@@ -215,9 +215,9 @@
     <div class="resolver-panel">
       <div class="resolver-head">
         <div>
-          <div style="font-weight:900">Role & Team News Resolver — Phase 4F</div>
+          <div style="font-weight:900">Official Team Evidence Resolver — Phase 4G</div>
           <div class="short-meta">
-            Re-checks current provider context for the strongest WATCH items, then reruns the existing unified decision.
+            Re-checks Sportradar first, then uses official AFL.com.au / NRL.com team evidence as a conservative fallback before rerunning the unified decision.
           </div>
         </div>
         <div class="priority-actions">
@@ -232,7 +232,7 @@
 <div class="priority-board">
       <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap">
         <div>
-          <div style="font-weight:900">Top Priority WATCH Items — Phase 4F</div>
+          <div style="font-weight:900">Top Priority WATCH Items — Phase 4G</div>
           <div class="short-meta">Ranks the most promising release-locked WATCH items so extra checks are spent only where they may matter.</div>
         </div>
         <div class="priority-actions">
@@ -247,7 +247,7 @@
 <div class="scan-panel">
       <div class="scan-head">
         <div>
-          <div style="font-weight:900">Daily Scanner — Phase 4F</div>
+          <div style="font-weight:900">Daily Scanner — Phase 4G</div>
           <div class="short-meta">Conservative scan with API-credit caps. Research is saved to the operator board; nothing is published automatically.</div>
         </div>
         <div class="scan-controls">
@@ -520,6 +520,12 @@ function renderResolverBoard(){
         <div class="resolver-check"><div class="label">Release</div><div class="v ${x.releaseLocked?"pending":"ok"}">${x.releaseLocked?"LOCKED":"REVIEW"}</div></div>
       </div>
       <div class="resolver-source">Blocker: ${esc(priorityReason(x))}</div>
+      <div class="resolver-source">
+        Official fallback: ${x.officialRoleEvidence?.provider?esc(x.officialRoleEvidence.provider):"—"}
+        · ${x.officialRoleEvidence?.gate?esc(x.officialRoleEvidence.gate):"not checked"}
+        ${x.officialRoleEvidence?.url?` · <a href="${esc(x.officialRoleEvidence.url)}" target="_blank" rel="noopener">open source</a>`:""}
+      </div>
+      ${x.officialRoleEvidence?.detail?`<div class="resolver-source">${esc(x.officialRoleEvidence.detail)}</div>`:""}
       <div class="resolver-source">Last checked: ${x.checkedAt?esc(new Date(x.checkedAt).toLocaleString("en-AU")):"—"}</div>
     </div>`;
   }).join("");
@@ -875,7 +881,8 @@ async function recheckSavedWatchItem(item){
     score:hd.unifiedDecision.score,
     status:hd.unifiedDecision.status,
     releaseLocked:hd.unifiedDecision.releaseLocked,
-    reasons:hd.unifiedDecision.reasons||[]
+    reasons:hd.unifiedDecision.reasons||[],
+    officialRoleEvidence:hd.officialRoleEvidence || null
   });
 
   return hd.unifiedDecision;
@@ -1100,7 +1107,8 @@ async function researchPropForScan({sport,row,prop}){
     score:d.unifiedDecision.score,
     status:d.unifiedDecision.status,
     releaseLocked:d.unifiedDecision.releaseLocked,
-    reasons:d.unifiedDecision.reasons||[]
+    reasons:d.unifiedDecision.reasons||[],
+    officialRoleEvidence:d.officialRoleEvidence || null
   };
 
   addOperatorDecision(item);
@@ -1269,7 +1277,8 @@ async function loadPlayerHistory(btn){
         score:d.unifiedDecision.score,
         status:d.unifiedDecision.status,
         releaseLocked:d.unifiedDecision.releaseLocked,
-        reasons:d.unifiedDecision.reasons || []
+        reasons:d.unifiedDecision.reasons || [],
+        officialRoleEvidence:d.officialRoleEvidence || null
       });
     }
 
