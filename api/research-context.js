@@ -15,20 +15,55 @@ function sameTeam(a, b) {
   return na === nb || na.includes(nb) || nb.includes(na);
 }
 
+let lastSrRequestAt = 0;
+
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 async function srFetch(url, key) {
-  const r = await fetch(url, {
-    headers: { "x-api-key": key, accept: "application/json" },
-    cache: "no-store",
-  });
-  const text = await r.text();
-  if (!r.ok) {
-    throw new Error(`Sportradar ${r.status}: ${text.slice(0, 300)}`);
+  // Sportradar trial keys default to 1 query per second.
+  // Keep a safety buffer so sequential requests do not trip the 429 limit.
+  const minGapMs = 1150;
+  const elapsed = Date.now() - lastSrRequestAt;
+  if (elapsed < minGapMs) {
+    await sleep(minGapMs - elapsed);
   }
-  try {
-    return JSON.parse(text);
-  } catch {
-    throw new Error("Sportradar returned non-JSON data.");
+
+  for (let attempt = 0; attempt < 4; attempt++) {
+    lastSrRequestAt = Date.now();
+
+    const r = await fetch(url, {
+      headers: { "x-api-key": key, accept: "application/json" },
+      cache: "no-store",
+    });
+
+    const text = await r.text();
+
+    if (r.status === 429) {
+      const retryAfterHeader = Number(r.headers.get("retry-after"));
+      const waitMs = Number.isFinite(retryAfterHeader) && retryAfterHeader > 0
+        ? retryAfterHeader * 1000
+        : 1200 * (attempt + 1);
+
+      if (attempt < 3) {
+        await sleep(waitMs);
+        continue;
+      }
+    }
+
+    if (!r.ok) {
+      throw new Error(`Sportradar ${r.status}: ${text.slice(0, 300)}`);
+    }
+
+    try {
+      return JSON.parse(text);
+    } catch {
+      throw new Error("Sportradar returned non-JSON data.");
+    }
   }
+
+  throw new Error("Sportradar rate limit persisted after retries.");
 }
 
 function getSummaries(data) {
@@ -167,11 +202,19 @@ module.exports = async function handler(req, res) {
       throw new Error("Matched event but could not resolve Sportradar competitor IDs.");
     }
 
-    const [homeHistoryRaw, awayHistoryRaw, h2hRaw] = await Promise.all([
-      srFetch(`${base}/competitors/${encodeURIComponent(homeComp.id)}/summaries.json`, key),
-      srFetch(`${base}/competitors/${encodeURIComponent(awayComp.id)}/summaries.json`, key),
-      srFetch(`${base}/competitors/${encodeURIComponent(homeComp.id)}/versus/${encodeURIComponent(awayComp.id)}/summaries.json`, key),
-    ]);
+    // Trial access is 1 QPS, so these calls must remain sequential.
+    const homeHistoryRaw = await srFetch(
+      `${base}/competitors/${encodeURIComponent(homeComp.id)}/summaries.json`,
+      key
+    );
+    const awayHistoryRaw = await srFetch(
+      `${base}/competitors/${encodeURIComponent(awayComp.id)}/summaries.json`,
+      key
+    );
+    const h2hRaw = await srFetch(
+      `${base}/competitors/${encodeURIComponent(homeComp.id)}/versus/${encodeURIComponent(awayComp.id)}/summaries.json`,
+      key
+    );
 
     const homeHistory = recentRecord(getSummaries(homeHistoryRaw), homeComp.id, 5);
     const awayHistory = recentRecord(getSummaries(awayHistoryRaw), awayComp.id, 5);
