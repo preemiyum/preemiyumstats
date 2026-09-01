@@ -49,6 +49,14 @@
     .offer{display:grid;grid-template-columns:1fr auto auto;gap:16px;padding:6px 0;color:var(--muted)}
     .outlier{color:var(--red)}.err{border:1px solid #6d2934;background:#2a1118;color:#ffc0c7;padding:15px;border-radius:12px}
     .footer-note{color:var(--muted);font-size:13px;line-height:1.6;margin:26px 0}
+
+    .deep{margin-top:14px;border-top:1px solid var(--line);padding-top:12px}
+    .deep button{font-size:12px;padding:8px 11px}
+    .deep-result{margin-top:10px;background:#06111f;border:1px solid var(--line);border-radius:12px;padding:12px}
+    .deep-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;margin-top:10px}
+    .deep-stat{border:1px solid var(--line);border-radius:10px;padding:10px}
+    .deep-stat .v{font-weight:850;font-size:17px;margin-top:4px}
+    .recent{font-size:12px;color:var(--muted);margin-top:8px;line-height:1.5}
     @media(max-width:900px){.stats{grid-template-columns:1fr 1fr 1fr}.gate-grid{grid-template-columns:1fr 1fr}}
     @media(max-width:620px){h1{font-size:30px}.stats{grid-template-columns:1fr 1fr}.top{flex-direction:column}}
   </style>
@@ -103,6 +111,53 @@ function gateLabel(k){
     injuriesTeamNews:"Injuries / team news",matchup:"Matchup",
     projection:"Projection",lineMovement:"Line movement"
   }[k]||k;
+}
+
+
+function deepGateClass(v){ return v==="PASS"?"ok":v==="FAIL"?"fail":"pending"; }
+
+async function runDeepResearch(btn){
+  const sport=btn.dataset.sport;
+  const home=btn.dataset.home;
+  const away=btn.dataset.away;
+  const selection=btn.dataset.selection;
+  const date=btn.dataset.date;
+  const target=btn.parentElement.querySelector(".deep-result");
+  btn.disabled=true;
+  btn.textContent="Running Sportradar research…";
+  target.innerHTML="";
+
+  try{
+    const q=new URLSearchParams({sport,home,away,selection,date});
+    const r=await fetch("/api/research-context?"+q.toString(),{cache:"no-store"});
+    const d=await r.json();
+    if(!r.ok) throw new Error(d.error||"Deep research failed.");
+
+    const selected=d.selectedRecord;
+    const opp=d.opponentRecord;
+    const h2h=d.h2h?.record;
+    const recent=(arr)=>arr?.map(g=>`${g.result} v ${g.opponent}`).join(" · ")||"No data";
+
+    target.innerHTML=`
+      <div><strong>SPORTRADAR DEEP CONTEXT</strong></div>
+      <div class="deep-grid">
+        <div class="deep-stat"><div class="label">Selected L5</div><div class="v">${selected?.label||"N/A"}</div></div>
+        <div class="deep-stat"><div class="label">Opponent L5</div><div class="v">${opp?.label||"N/A"}</div></div>
+        <div class="deep-stat"><div class="label">H2H L5</div><div class="v">${h2h?.label||"N/A"}</div></div>
+        <div class="deep-stat"><div class="label">Form gate</div><div class="v ${deepGateClass(d.gates.form)}">${d.gates.form}</div></div>
+        <div class="deep-stat"><div class="label">Matchup gate</div><div class="v ${deepGateClass(d.gates.matchup)}">${d.gates.matchup}</div></div>
+        <div class="deep-stat"><div class="label">Provider</div><div class="v">${d.provider}</div></div>
+      </div>
+      <div class="recent"><b>${d.home.name}:</b> ${recent(d.home.recent)}</div>
+      <div class="recent"><b>${d.away.name}:</b> ${recent(d.away.recent)}</div>
+      <div class="recent"><b>Selected H2H:</b> ${recent(d.h2h.recent)}</div>
+      <div class="recent" style="margin-top:10px">${d.note}</div>`;
+  }catch(e){
+    target.innerHTML=`<div class="err">${String(e.message||e)}</div>`;
+  }finally{
+    btn.disabled=false;
+    btn.textContent="Run deep research";
+  }
 }
 
 async function load(){
@@ -163,12 +218,25 @@ async function load(){
           <div class="gate-grid">${gate}</div>
         </div>
 
+
+        ${(row.sport==="nrl"||row.sport==="nrlw"||row.sport==="afl")?`
+        <div class="deep">
+          <button class="deep-btn"
+            data-sport="${row.sport}"
+            data-home="${row.homeTeam.replaceAll('"','&quot;')}"
+            data-away="${row.awayTeam.replaceAll('"','&quot;')}"
+            data-selection="${row.selection.replaceAll('"','&quot;')}"
+            data-date="${row.commenceTime.slice(0,10)}">Run deep research</button>
+          <div class="deep-result"></div>
+        </div>`:""}
+
         <details>
           <summary>Compare bookmaker prices</summary>
           <div class="offers">${offers}</div>
         </details>
       </article>`;
     }).join("");
+    document.querySelectorAll(".deep-btn").forEach(b=>b.addEventListener("click",()=>runDeepResearch(b)));
   }catch(e){
     meta.textContent="Research feed error";
     content.innerHTML=`<div class="err">${String(e.message||e)}</div>`;
