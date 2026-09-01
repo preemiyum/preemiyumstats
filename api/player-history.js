@@ -309,7 +309,12 @@ function looseTeamPattern(name) {
 
 function officialNrlRoleFromText(text, player, team) {
   const p = looseNamePattern(player);
-  const t = looseTeamPattern(team);
+  const fullTeam = looseTeamPattern(team);
+  const teamParts = nameTokens(team);
+  const shortTeam = teamParts.length ? escRe(teamParts[teamParts.length - 1]) : "";
+  const t = shortTeam && fullTeam
+    ? `(?:${fullTeam}|${shortTeam})`
+    : (fullTeam || shortTeam);
   if (!p || !t) return null;
 
   const starter = new RegExp(
@@ -947,7 +952,7 @@ module.exports = async function handler(req, res) {
     });
 
     return res.json({
-      phase:"4G.1",
+      phase:"4G.2",
       provider:"Sportradar",
       sport,
       player,
