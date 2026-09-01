@@ -154,12 +154,23 @@
     .priority-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
     @media(max-width:900px){.priority-grid{grid-template-columns:1fr}}
 
+
+    .resolver-panel{margin:14px 0;border:1px solid var(--line);border-radius:13px;background:#081625;padding:12px}
+    .resolver-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap}
+    .resolver-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:10px}
+    .resolver-card{border:1px solid var(--line);border-radius:10px;background:#06111f;padding:10px}
+    .resolver-state{font-size:18px;font-weight:900}
+    .resolver-source{font-size:11px;color:var(--muted);margin-top:4px}
+    .resolver-checks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:7px;margin-top:8px}
+    .resolver-check{border:1px solid var(--line);border-radius:8px;padding:7px}
+    .resolver-log{margin-top:10px;font-size:11px;color:var(--muted);white-space:pre-wrap}
+    @media(max-width:900px){.resolver-grid{grid-template-columns:1fr}.resolver-checks{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
 <header>
   <div class="brand"><span>P</span> PREEMIYUM</div>
-  <div style="color:#9eafc5;font-size:13px">RESEARCH ENGINE — PHASE 4E</div>
+  <div style="color:#9eafc5;font-size:13px">RESEARCH ENGINE — PHASE 4F</div>
 </header>
 <main class="wrap">
   <h1>Preemiyum Research Engine</h1>
@@ -184,7 +195,7 @@
   <section class="operator-board" id="operator-board">
     <div class="operator-head">
       <div>
-        <div class="operator-title">Priority Operator Board — Phase 4E</div>
+        <div class="operator-title">Role Resolver Board — Phase 4F</div>
         <div class="operator-sub">
           Research results are collected here automatically after a player-history check.
           Only BET CANDIDATE can move to operator review; locked or failed props stay out of subscriber output.
@@ -200,10 +211,28 @@
 
     
     
-    <div class="priority-board">
+    
+    <div class="resolver-panel">
+      <div class="resolver-head">
+        <div>
+          <div style="font-weight:900">Role & Team News Resolver — Phase 4F</div>
+          <div class="short-meta">
+            Re-checks current provider context for the strongest WATCH items, then reruns the existing unified decision.
+          </div>
+        </div>
+        <div class="priority-actions">
+          <button id="resolve-top-role">Resolve top 3 roles</button>
+          <button id="resolve-all-watch">Resolve all WATCH roles</button>
+        </div>
+      </div>
+      <div id="resolver-grid" class="resolver-grid"></div>
+      <div id="resolver-status" class="resolver-log">Resolver idle.</div>
+    </div>
+
+<div class="priority-board">
       <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap">
         <div>
-          <div style="font-weight:900">Top Priority WATCH Items — Phase 4E</div>
+          <div style="font-weight:900">Top Priority WATCH Items — Phase 4F</div>
           <div class="short-meta">Ranks the most promising release-locked WATCH items so extra checks are spent only where they may matter.</div>
         </div>
         <div class="priority-actions">
@@ -218,7 +247,7 @@
 <div class="scan-panel">
       <div class="scan-head">
         <div>
-          <div style="font-weight:900">Daily Scanner — Phase 4E</div>
+          <div style="font-weight:900">Daily Scanner — Phase 4F</div>
           <div class="short-meta">Conservative scan with API-credit caps. Research is saved to the operator board; nothing is published automatically.</div>
         </div>
         <div class="scan-controls">
@@ -451,6 +480,51 @@ function priorityScore(item){
   return s;
 }
 
+
+function roleStateForItem(item){
+  const reasons=(item.reasons||[]).map(x=>String(x).toLowerCase());
+  if(!item.releaseLocked && item.status==="BET CANDIDATE") return "CLEARED";
+  if(reasons.some(r=>r.includes("role") || r.includes("lineup"))) return "PENDING";
+  return "UNKNOWN";
+}
+
+function renderResolverBoard(){
+  const box=document.getElementById("resolver-grid");
+  if(!box) return;
+
+  const watch=[...operatorState.values()]
+    .filter(x=>x.status==="WATCH")
+    .sort((a,b)=>priorityScore(b)-priorityScore(a))
+    .slice(0,3);
+
+  if(!watch.length){
+    box.innerHTML=`<div class="empty-short">No WATCH items currently need role resolution.</div>`;
+    return;
+  }
+
+  box.innerHTML=watch.map((x,i)=>{
+    const state=roleStateForItem(x);
+    const cls=state==="CLEARED"?"ok":state==="FAIL"?"fail":"pending";
+    return `<div class="resolver-card">
+      <div style="display:flex;justify-content:space-between;gap:10px">
+        <div>
+          <div class="priority-rank">#${i+1} ROLE CHECK</div>
+          <div class="priority-name">${esc(x.player)}</div>
+          <div class="priority-meta">${esc((x.sport||"").toUpperCase())} · ${esc(x.market||"")}${x.line!==""&&x.line!=null?` · line ${esc(x.line)}`:""}</div>
+        </div>
+        <div class="resolver-state ${cls}">${esc(state)}</div>
+      </div>
+      <div class="resolver-checks">
+        <div class="resolver-check"><div class="label">Event link</div><div class="v">${x.eventId?"READY":"RECOVER"}</div></div>
+        <div class="resolver-check"><div class="label">Books</div><div class="v">${esc(x.books??"—")}</div></div>
+        <div class="resolver-check"><div class="label">Release</div><div class="v ${x.releaseLocked?"pending":"ok"}">${x.releaseLocked?"LOCKED":"REVIEW"}</div></div>
+      </div>
+      <div class="resolver-source">Blocker: ${esc(priorityReason(x))}</div>
+      <div class="resolver-source">Last checked: ${x.checkedAt?esc(new Date(x.checkedAt).toLocaleString("en-AU")):"—"}</div>
+    </div>`;
+  }).join("");
+}
+
 function renderPriorityBoard(){
   const box=document.getElementById("priority-grid");
   if(!box) return;
@@ -501,6 +575,7 @@ function renderOperatorBoard(){
     nobet.length?nobet.map(renderShortCard).join(""):`<div class="empty-short">No rejected props yet.</div>`;
   renderDecisionHistory();
   renderPriorityBoard();
+  renderResolverBoard();
 }
 
 function addOperatorDecision(item){
@@ -806,6 +881,51 @@ async function recheckSavedWatchItem(item){
   return hd.unifiedDecision;
 }
 
+
+
+async function resolveRoleItems(items,label){
+  const statusEl=document.getElementById("resolver-status");
+  if(!items.length){
+    statusEl.textContent="No WATCH items need role resolution.";
+    return;
+  }
+
+  let ok=0,failed=0,cleared=0;
+  for(let i=0;i<items.length;i++){
+    const item=items[i];
+    statusEl.textContent=`${label} ${i+1}/${items.length}: ${item.player} — checking fresh market + current role/lineup context…`;
+    try{
+      const decision=await recheckSavedWatchItem(item);
+      ok++;
+      if(decision?.status==="BET CANDIDATE" && !decision?.releaseLocked) cleared++;
+    }catch(e){
+      failed++;
+      statusEl.textContent=`Could not resolve ${item.player}: ${String(e?.message||e)}`;
+    }
+    renderOperatorBoard();
+  }
+
+  if(!failed){
+    statusEl.textContent=`Role resolver complete: ${ok} updated${cleared?`, ${cleared} cleared to candidate review`:""}.`;
+  }else if(ok){
+    statusEl.textContent=`Role resolver complete: ${ok} updated, ${failed} failed${cleared?`, ${cleared} cleared to candidate review`:""}.`;
+  }
+}
+
+async function resolveTopRoles(){
+  const items=[...operatorState.values()]
+    .filter(x=>x.status==="WATCH")
+    .sort((a,b)=>priorityScore(b)-priorityScore(a))
+    .slice(0,3);
+  await resolveRoleItems(items,"Top-role check");
+}
+
+async function resolveAllWatchRoles(){
+  const items=[...operatorState.values()]
+    .filter(x=>x.status==="WATCH")
+    .sort((a,b)=>priorityScore(b)-priorityScore(a));
+  await resolveRoleItems(items,"WATCH role check");
+}
 
 async function recheckTopPriority(){
   const statusEl=document.getElementById("priority-status");
@@ -1461,6 +1581,8 @@ document.getElementById("operator-refresh").addEventListener("click",renderOpera
 document.getElementById("operator-recheck").addEventListener("click",recheckWatchlist);
 document.getElementById("priority-refresh").addEventListener("click",renderPriorityBoard);
 document.getElementById("priority-recheck").addEventListener("click",recheckTopPriority);
+document.getElementById("resolve-top-role").addEventListener("click",resolveTopRoles);
+document.getElementById("resolve-all-watch").addEventListener("click",resolveAllWatchRoles);
 document.getElementById("run-daily-scan").addEventListener("click",()=>runDailyScan({auto:false}));
 document.getElementById("stop-daily-scan").addEventListener("click",()=>{dailyScanAbort=true;});
 configureDailyAutoRun();
