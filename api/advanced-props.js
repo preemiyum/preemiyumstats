@@ -26,14 +26,22 @@ function classifyMarket(key) {
   return key;
 }
 
+function teamTokens(s) {
+  const stop = new Set(["the","rugby","league","football","club","fc"]);
+  return lower(s)
+    .replace(/[’'`.,-]/g, " ")
+    .split(/\s+/)
+    .filter(x => x.length >= 4 && !stop.has(x));
+}
+
 function eventMatches(text, home, away) {
   const t = lower(text);
-  const h = lower(home);
-  const a = lower(away);
-  if (!h || !a) return true;
+  const homeParts = teamTokens(home);
+  const awayParts = teamTokens(away);
 
-  const homeParts = h.split(/\s+/).filter(x => x.length > 3);
-  const awayParts = a.split(/\s+/).filter(x => x.length > 3);
+  if (!homeParts.length || !awayParts.length) return true;
+
+  // Require at least one meaningful token from each team.
   const hHit = homeParts.some(x => t.includes(x));
   const aHit = awayParts.some(x => t.includes(x));
   return hHit && aHit;
@@ -65,7 +73,7 @@ module.exports = async function handler(req, res) {
   }
 
   const url = new URL("https://krokodds.com.au/api/v1/opportunities/player-props");
-  url.searchParams.set("sport", sportKey);
+  url.searchParams.set("sport_key", sportKey);
   url.searchParams.set("include_stats", "true");
   url.searchParams.set("min_ev", "0");
   url.searchParams.set("limit", "100");
@@ -136,6 +144,11 @@ module.exports = async function handler(req, res) {
       rateLimitRemaining: r.headers.get("x-ratelimit-remaining"),
       creditsRemaining: r.headers.get("x-credits-remaining"),
       rows,
+      diagnostics: {
+        sportRowsReturned: data.length,
+        matchedRows: rows.length,
+        sampleEvents: [...new Set(data.slice(0, 20).map(x => x.event).filter(Boolean))].slice(0, 8)
+      },
       note:
         "Krok Odds provides AU bookmaker player-prop opportunities with EV estimates and optional historical statistics. These are research inputs, not guaranteed-value or Official Play decisions."
     });
