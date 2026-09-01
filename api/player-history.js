@@ -251,6 +251,31 @@ function stripHtml(html) {
     .trim();
 }
 
+
+function searchableOfficialText(raw) {
+  const s = String(raw || "");
+  const visible = stripHtml(s);
+
+  // Some league pages hydrate team-list content from JSON inside <script> tags.
+  // Keep that payload too; strip tags but NOT script contents.
+  const rawText = s
+    .replace(/<[^>]+>/g, " ")
+    .replace(/\\u0027/gi, "'")
+    .replace(/\\u0022/gi, '"')
+    .replace(/\\u003c/gi, "<")
+    .replace(/\\u003e/gi, ">")
+    .replace(/\\u0026/gi, "&")
+    .replace(/&nbsp;/gi, " ")
+    .replace(/&amp;/gi, "&")
+    .replace(/&#39;/gi, "'")
+    .replace(/&quot;/gi, '"')
+    .replace(/\\n|\\r|\\t/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  return `${visible} ${rawText}`.replace(/\s+/g, " ").trim();
+}
+
 async function publicText(url) {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), 8000);
@@ -410,6 +435,7 @@ async function officialNrlRoleEvidence({ sport, player, home, away, date }) {
   // Example for Round 27, 2026:
   // https://www.nrl.com/news/2026/09/01/nrl-team-lists-round-27/
   let links = directNrlTeamListCandidates(date, sport);
+  const diagnostics = [];
 
   // If the predictable URL is unavailable, fall back to homepage discovery.
   try {
@@ -424,7 +450,7 @@ async function officialNrlRoleEvidence({ sport, player, home, away, date }) {
   for (const url of links) {
     try {
       const page = await publicText(url);
-      const text = stripHtml(page);
+      const text = searchableOfficialText(page);
       const n = norm(text);
       const homeN = norm(home);
       const awayN = norm(away);
@@ -437,8 +463,9 @@ async function officialNrlRoleEvidence({ sport, player, home, away, date }) {
       const awayShort = awayTokens[awayTokens.length - 1] || awayN;
       const homeMatched = n.includes(homeN) || n.includes(homeShort);
       const awayMatched = n.includes(awayN) || n.includes(awayShort);
-      if (!homeMatched || !awayMatched) continue;
 
+      // Parse explicit role sentences first. This is stronger than relying on
+      // fixture-header matching, and survives hydration/format changes.
       const a = officialNrlRoleFromText(text, player, home);
       const b = officialNrlRoleFromText(text, player, away);
       const evidence = a || b;
@@ -451,6 +478,13 @@ async function officialNrlRoleEvidence({ sport, player, home, away, date }) {
           ...evidence,
         };
       }
+
+      if (!homeMatched || !awayMatched) {
+        diagnostics.push(`${url}: page loaded but fixture names were not both matched`);
+        continue;
+      }
+
+
       return {
         provider: "NRL.com",
         sourceType: "official_team_list",
@@ -459,17 +493,20 @@ async function officialNrlRoleEvidence({ sport, player, home, away, date }) {
         gate: "PENDING",
         detail: "Official current-round team-list page was found, but the player could not be confirmed in a release-safe role.",
       };
-    } catch {
+    } catch (e) {
+      diagnostics.push(`${url}: ${e?.message || String(e)}`);
       continue;
     }
   }
   return {
     provider: "NRL.com",
     sourceType: "official_team_list",
-    url: null,
+    url: links[0] || null,
     checkedAt: new Date().toISOString(),
     gate: "PENDING",
-    detail: "A matching current official NRL/NRLW team-list page could not be resolved automatically.",
+    detail: diagnostics.length
+      ? `Official NRL lookup attempted ${links.length} page(s) but could not parse release-safe team evidence. First issue: ${diagnostics[0]}`
+      : `Official NRL lookup checked ${links.length} candidate page(s), but fixture/player text was not found in the server-rendered page. Phase 4G.3 now also inspects embedded page JSON.`,
   };
 }
 
@@ -952,7 +989,7 @@ module.exports = async function handler(req, res) {
     });
 
     return res.json({
-      phase:"4G.2",
+      phase:"4G.3",
       provider:"Sportradar",
       sport,
       player,
