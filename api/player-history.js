@@ -334,15 +334,88 @@ function officialNrlRoleFromText(text, player, team) {
   return null;
 }
 
-async function officialNrlRoleEvidence({ sport, player, home, away }) {
+
+function isoDateOnly(value) {
+  const d = new Date(value);
+  if (Number.isNaN(d.getTime())) return null;
+  return d;
+}
+
+function firstThursdayOfMarch(year) {
+  const d = new Date(Date.UTC(year, 2, 1));
+  while (d.getUTCDay() !== 4) d.setUTCDate(d.getUTCDate() + 1);
+  return d;
+}
+
+function estimateNrlRound(eventDateValue) {
+  const eventDate = isoDateOnly(eventDateValue);
+  if (!eventDate) return null;
+  const first = firstThursdayOfMarch(eventDate.getUTCFullYear());
+  const diffDays = Math.floor((eventDate - first) / 86400000);
+  return Math.max(1, Math.min(30, Math.floor(diffDays / 7) + 1));
+}
+
+function tuesdayOfEventWeek(eventDateValue) {
+  const d = isoDateOnly(eventDateValue);
+  if (!d) return null;
+  const copy = new Date(Date.UTC(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate()));
+  const day = copy.getUTCDay(); // Sun=0
+  const delta = day >= 2 ? day - 2 : day + 5;
+  copy.setUTCDate(copy.getUTCDate() - delta);
+  return copy;
+}
+
+function yyyyMmDdPath(d) {
+  if (!d) return null;
+  const y = d.getUTCFullYear();
+  const m = String(d.getUTCMonth() + 1).padStart(2, "0");
+  const day = String(d.getUTCDate()).padStart(2, "0");
+  return `${y}/${m}/${day}`;
+}
+
+function directNrlTeamListCandidates(eventDateValue, sport) {
+  if (sport !== "nrl" && sport !== "nrlw") return [];
+  const eventDate = isoDateOnly(eventDateValue);
+  if (!eventDate) return [];
+
+  const round = estimateNrlRound(eventDate);
+  const tue = tuesdayOfEventWeek(eventDate);
+  if (!round || !tue) return [];
+
+  const dates = [0, -1, 1].map(offset => {
+    const d = new Date(tue);
+    d.setUTCDate(d.getUTCDate() + offset);
+    return d;
+  });
+
+  const slug = sport === "nrlw" ? "nrlw-team-lists-round" : "nrl-team-lists-round";
+  return unique(dates.map(d =>
+    `https://www.nrl.com/news/${yyyyMmDdPath(d)}/${slug}-${round}/`
+  ));
+}
+
+async function officialNrlRoleEvidence({ sport, player, home, away, date }) {
   const homePage = "https://www.nrl.com/";
-  const html = await publicText(homePage);
   const wantsNrlw = sport === "nrlw";
   const linkRegex = wantsNrlw
     ? /\/news\/\d{4}\/\d{2}\/\d{2}\/nrlw-team-lists-round-\d+\/?/i
     : /\/news\/\d{4}\/\d{2}\/\d{2}\/nrl-team-lists-round-\d+\/?/i;
 
-  const links = discoverLinks(html, homePage, linkRegex).slice(0, 5);
+  // Phase 4G.1: try the deterministic current-round article URL first.
+  // Example for Round 27, 2026:
+  // https://www.nrl.com/news/2026/09/01/nrl-team-lists-round-27/
+  let links = directNrlTeamListCandidates(date, sport);
+
+  // If the predictable URL is unavailable, fall back to homepage discovery.
+  try {
+    const html = await publicText(homePage);
+    links = unique([
+      ...links,
+      ...discoverLinks(html, homePage, linkRegex).slice(0, 8),
+    ]);
+  } catch {
+    // Direct candidates remain available even if homepage discovery fails.
+  }
   for (const url of links) {
     try {
       const page = await publicText(url);
@@ -350,7 +423,16 @@ async function officialNrlRoleEvidence({ sport, player, home, away }) {
       const n = norm(text);
       const homeN = norm(home);
       const awayN = norm(away);
-      if (!n.includes(homeN) || !n.includes(awayN)) continue;
+
+      // The official article often uses short names (e.g. Sharks / Storm)
+      // while the Odds feed can use full names (Cronulla Sutherland Sharks).
+      const homeTokens = nameTokens(home);
+      const awayTokens = nameTokens(away);
+      const homeShort = homeTokens[homeTokens.length - 1] || homeN;
+      const awayShort = awayTokens[awayTokens.length - 1] || awayN;
+      const homeMatched = n.includes(homeN) || n.includes(homeShort);
+      const awayMatched = n.includes(awayN) || n.includes(awayShort);
+      if (!homeMatched || !awayMatched) continue;
 
       const a = officialNrlRoleFromText(text, player, home);
       const b = officialNrlRoleFromText(text, player, away);
@@ -431,10 +513,10 @@ async function officialAflRoleEvidence({ player, home, away }) {
   };
 }
 
-async function officialRoleEvidence({ sport, player, home, away }) {
+async function officialRoleEvidence({ sport, player, home, away, date }) {
   try {
     if (sport === "nrl" || sport === "nrlw") {
-      return await officialNrlRoleEvidence({ sport, player, home, away });
+      return await officialNrlRoleEvidence({ sport, player, home, away, date });
     }
     if (sport === "afl") {
       return await officialAflRoleEvidence({ player, home, away });
@@ -727,6 +809,7 @@ module.exports = async function handler(req, res) {
         player,
         home,
         away,
+        date,
       });
 
       // Secondary official evidence may improve PENDING -> WATCH, or for the
@@ -864,7 +947,7 @@ module.exports = async function handler(req, res) {
     });
 
     return res.json({
-      phase:"4G",
+      phase:"4G.1",
       provider:"Sportradar",
       sport,
       player,
