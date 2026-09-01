@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Preemiyum Research Engine</title>
+  <meta name="robots" content="noindex,nofollow" />
+  <style>
+    :root { --bg:#07111f; --panel:#0d1d33; --line:#1c3451; --text:#f4f7fb; --muted:#9fb0c6; --green:#39df7c; --gold:#c9a24b; --red:#ff6677; }
+    *{box-sizing:border-box} body{margin:0;background:linear-gradient(180deg,#07111f,#040912);color:var(--text);font-family:Inter,system-ui,-apple-system,Segoe UI,sans-serif;min-height:100vh}
+    header{padding:24px 28px;border-bottom:1px solid var(--line);display:flex;gap:18px;align-items:center;justify-content:space-between;position:sticky;top:0;background:rgba(7,17,31,.96);backdrop-filter:blur(10px);z-index:10}
+    .brand{font-weight:900;letter-spacing:.18em}.brand span{color:var(--green)}
+    .wrap{max-width:1280px;margin:0 auto;padding:28px}
+    h1{font-size:42px;margin:0 0 8px}.sub{color:var(--muted);margin-bottom:22px}
+    .controls{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:22px}
+    button{background:var(--panel);color:var(--text);border:1px solid var(--line);padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:700}
+    button.active{border-color:var(--green);box-shadow:0 0 0 1px var(--green) inset}
+    .meta{color:var(--muted);font-size:13px;margin:8px 0 20px}
+    .grid{display:grid;gap:14px}
+    .card{background:linear-gradient(180deg,#0d1d33,#091524);border:1px solid var(--line);border-radius:16px;padding:18px}
+    .top{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}
+    .score{font-size:30px;font-weight:900}.status{font-size:12px;font-weight:900;letter-spacing:.08em}
+    .official{color:var(--green)} .watch{color:var(--gold)} .pass{color:var(--muted)}
+    .selection{font-size:24px;font-weight:800;margin:6px 0}.event{color:var(--muted);font-size:14px}
+    .stats{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-top:16px}
+    .stat{background:#07111f;border:1px solid var(--line);border-radius:12px;padding:12px}.label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}.value{font-size:18px;font-weight:800;margin-top:4px}
+    details{margin-top:12px}.offers{margin-top:8px;border-top:1px solid var(--line);padding-top:8px}.offer{display:flex;justify-content:space-between;padding:6px 0;color:var(--muted)}
+    .err{padding:16px;border:1px solid #6f2733;background:#2a1118;border-radius:12px;color:#ffb4bd}
+    .note{margin-top:26px;color:var(--muted);font-size:13px;line-height:1.6}
+    @media(max-width:760px){h1{font-size:30px}.stats{grid-template-columns:1fr 1fr}.top{flex-direction:column}}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand"><span>P</span> PREEMIYUM</div>
+    <div style="color:#9fb0c6;font-size:13px">LIVE MARKET BOARD — PHASE 1</div>
+  </header>
+  <main class="wrap">
+    <h1>Preemiyum Research Engine</h1>
+    <div class="sub">Live bookmaker comparison, no-vig consensus probability and price-value screening.</div>
+
+    <div class="controls">
+      <button data-sport="nrl" class="active">NRL</button>
+      <button data-sport="afl">AFL</button>
+      <button data-sport="nrlw">NRLW</button>
+      <button data-sport="nba">NBA</button>
+      <button data-sport="wnba">WNBA</button>
+      <button id="refresh">Refresh</button>
+    </div>
+
+    <div id="meta" class="meta">Loading live market data…</div>
+    <div id="content" class="grid"></div>
+
+    <div class="note">
+      <strong>Phase 1:</strong> “Official Candidate” means a price/value candidate relative to the current bookmaker consensus only.
+      It is <strong>not</strong> yet an official subscriber bet. Phase 2 adds player/team form, role/minutes, injuries, matchup, projections and line movement before a play can be approved.
+    </div>
+  </main>
+
+<script>
+let currentSport = "nrl";
+const content = document.getElementById("content");
+const meta = document.getElementById("meta");
+
+function pct(x){ return (x*100).toFixed(1) + "%"; }
+function ev(x){ return (x>=0?"+":"") + (x*100).toFixed(1) + "%"; }
+function dt(x){ try{return new Date(x).toLocaleString("en-AU");}catch{return x;} }
+
+async function load(){
+  meta.textContent = "Loading live " + currentSport.toUpperCase() + " markets…";
+  content.innerHTML = "";
+  try {
+    const r = await fetch("/api/market-board?sport=" + encodeURIComponent(currentSport), {cache:"no-store"});
+    const data = await r.json();
+    if(!r.ok) throw new Error(data.error || "Unable to load market data.");
+    meta.textContent = `Updated ${dt(data.generatedAt)} · ${data.rows.length} selections` +
+      (data.requestsRemaining ? ` · API credits remaining: ${data.requestsRemaining}` : "");
+
+    if(!data.rows.length){
+      content.innerHTML = `<div class="card">No qualifying two-way H2H markets returned for ${currentSport.toUpperCase()} right now.</div>`;
+      return;
+    }
+
+    content.innerHTML = data.rows.map(row => {
+      const cls = row.status === "OFFICIAL CANDIDATE" ? "official" : row.status === "WATCH" ? "watch" : "pass";
+      const offers = row.offers.map(o => `<div class="offer"><span>${o.book}</span><strong>$${o.price.toFixed(2)}</strong></div>`).join("");
+      return `<article class="card">
+        <div class="top">
+          <div>
+            <div class="status ${cls}">${row.status}</div>
+            <div class="selection">${row.selection}</div>
+            <div class="event">${row.awayTeam} @ ${row.homeTeam} · ${dt(row.commenceTime)}</div>
+          </div>
+          <div class="score">${row.score}<span style="font-size:13px;color:#9fb0c6"> /100</span></div>
+        </div>
+        <div class="stats">
+          <div class="stat"><div class="label">Best Price</div><div class="value">$${row.bestPrice.toFixed(2)}</div></div>
+          <div class="stat"><div class="label">Best Book</div><div class="value">${row.bestBook}</div></div>
+          <div class="stat"><div class="label">Fair Prob.</div><div class="value">${pct(row.fairProbability)}</div></div>
+          <div class="stat"><div class="label">Market EV</div><div class="value">${ev(row.marketEV)}</div></div>
+          <div class="stat"><div class="label">Books</div><div class="value">${row.books}</div></div>
+        </div>
+        <details><summary>Compare bookmaker prices</summary><div class="offers">${offers}</div></details>
+      </article>`;
+    }).join("");
+  } catch(e) {
+    meta.textContent = "Research feed error";
+    content.innerHTML = `<div class="err">${String(e.message || e)}</div>`;
+  }
+}
+
+document.querySelectorAll("[data-sport]").forEach(btn => {
+  btn.addEventListener("click", () => {
+    document.querySelectorAll("[data-sport]").forEach(x=>x.classList.remove("active"));
+    btn.classList.add("active");
+    currentSport = btn.dataset.sport;
+    load();
+  });
+});
+document.getElementById("refresh").addEventListener("click", load);
+load();
+</script>
+</body>
+</html>
