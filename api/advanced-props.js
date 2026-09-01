@@ -47,6 +47,111 @@ function eventMatches(text, home, away) {
   return hHit && aHit;
 }
 
+
+function looksLikeProp(x) {
+  if (!x || typeof x !== "object") return false;
+  const hasPlayer = Boolean(x.player_name || x.player || x.player_canonical || x.player_slug);
+  const hasMarket = Boolean(x.market_key || x.market);
+  const hasPrice = Number.isFinite(Number(x.odds ?? x.price ?? x.best_price));
+  return hasPlayer && hasMarket && hasPrice;
+}
+
+function flattenPropObjects(obj, eventContext = {}, out = [], seen = new Set()) {
+  if (!obj || typeof obj !== "object") return out;
+  if (seen.has(obj)) return out;
+  seen.add(obj);
+
+  if (Array.isArray(obj)) {
+    for (const item of obj) flattenPropObjects(item, eventContext, out, seen);
+    return out;
+  }
+
+  const nextContext = {
+    event:
+      obj.event ||
+      obj.event_name ||
+      obj.matchup ||
+      obj.name ||
+      eventContext.event ||
+      "",
+    eventId:
+      obj.event_id ||
+      obj.id ||
+      eventContext.eventId ||
+      null,
+    commenceTime:
+      obj.commence_time ||
+      obj.start_time ||
+      eventContext.commenceTime ||
+      null,
+  };
+
+  if (looksLikeProp(obj)) {
+    out.push({
+      ...obj,
+      __event: nextContext.event,
+      __eventId: nextContext.eventId,
+      __commenceTime: nextContext.commenceTime,
+    });
+  }
+
+  for (const value of Object.values(obj)) {
+    if (value && typeof value === "object") {
+      flattenPropObjects(value, nextContext, out, seen);
+    }
+  }
+  return out;
+}
+
+function normalizePropRow(x, sport, sportKey) {
+  return {
+    id: x.id || null,
+    sport: x.sport || sport.toUpperCase(),
+    sportKey: x.sport_key || sportKey,
+    event: x.event || x.__event || "",
+    eventId: x.event_id || x.__eventId || null,
+    player: x.player_name || x.player || x.player_canonical || x.player_slug || "",
+    marketKey: x.market_key || x.market || "",
+    market: classifyMarket(x.market_key || x.market || ""),
+    line: x.line ?? x.point ?? null,
+    side: x.side || x.selection || null,
+    odds: Number(x.odds ?? x.price ?? x.best_price),
+    bookmaker: x.bookmaker || x.book || x.best_book || null,
+    evPercentage: Number(x.ev_percentage ?? x.ev ?? x.edge_percentage),
+    commenceTime: x.commence_time || x.__commenceTime || null,
+    historicalStats: x.historical_stats || x.stats || null,
+    raw: {
+      player_slug: x.player_slug || null,
+    }
+  };
+}
+
+async function krokFetch(path, key, params = {}) {
+  const url = new URL(`https://krokodds.com.au${path}`);
+  for (const [k, v] of Object.entries(params)) {
+    if (v !== null && v !== undefined && v !== "") url.searchParams.set(k, String(v));
+  }
+
+  const r = await fetch(url.toString(), {
+    headers: { "X-API-Key": key, accept: "application/json" },
+    cache: "no-store",
+  });
+  const body = await r.text();
+  if (!r.ok) {
+    const err = new Error(`Krok Odds ${r.status}: ${body.slice(0, 400)}`);
+    err.status = r.status;
+    throw err;
+  }
+  return {
+    data: JSON.parse(body),
+    headers: {
+      rateLimitRemaining: headers?.rateLimitRemaining || null,
+      creditsRemaining: headers?.creditsRemaining || null,
+      sourceMode,
+    }
+  };
+}
+
 module.exports = async function handler(req, res) {
   if (req.method !== "GET") {
     res.statusCode = 405;
@@ -72,48 +177,52 @@ module.exports = async function handler(req, res) {
     return res.json({ error: "Phase 3C/3D advanced props supports NRL, NRLW, NBA and WNBA." });
   }
 
-  const url = new URL("https://krokodds.com.au/api/v1/opportunities/player-props");
-  url.searchParams.set("sport_key", sportKey);
-  url.searchParams.set("include_stats", "true");
-  url.searchParams.set("min_ev", "0");
-  url.searchParams.set("limit", "100");
-
   try {
-    const r = await fetch(url.toString(), {
-      headers: { "X-API-Key": key, accept: "application/json" },
-      cache: "no-store",
-    });
-
-    const body = await r.text();
-    if (!r.ok) {
-      res.statusCode = r.status;
-      return res.json({ error: `Krok Odds ${r.status}: ${body.slice(0, 400)}` });
-    }
-
-    const parsed = JSON.parse(body);
-    const data = Array.isArray(parsed?.data) ? parsed.data : [];
-
-    const filtered = data.filter(x => eventMatches(x.event, home, away));
-
-    const rows = filtered.map(x => ({
-      id: x.id || null,
-      sport: x.sport || sport.toUpperCase(),
-      sportKey: x.sport_key || sportKey,
-      event: x.event || "",
-      player: x.player_name || x.player || "",
-      marketKey: x.market_key || x.market || "",
-      market: classifyMarket(x.market_key || x.market || ""),
-      line: x.line ?? null,
-      side: x.side || null,
-      odds: Number(x.odds),
-      bookmaker: x.bookmaker || null,
-      evPercentage: Number(x.ev_percentage),
-      commenceTime: x.commence_time || null,
-      historicalStats: x.historical_stats || null,
-      raw: {
-        player_slug: x.player_slug || null,
+    // First ask for +EV player-prop opportunities.
+    const opp = await krokFetch(
+      "/api/v1/opportunities/player-props",
+      key,
+      {
+        sport_key: sportKey,
+        include_stats: "true",
+        min_ev: 0,
+        limit: 100,
       }
-    }));
+    );
+
+    const oppRowsRaw = Array.isArray(opp.data?.data) ? opp.data.data : [];
+    let rows = oppRowsRaw
+      .filter(x => eventMatches(x.event, home, away))
+      .map(x => normalizePropRow(x, sport, sportKey));
+
+    let sourceMode = "positive-ev-opportunities";
+    let sportRowsReturned = oppRowsRaw.length;
+    let sampleEvents = [...new Set(oppRowsRaw.slice(0, 20).map(x => x.event).filter(Boolean))].slice(0, 8);
+    let headers = opp.headers;
+
+    // Important: the opportunities endpoint contains only value opportunities.
+    // If this matchup has no +EV rows right now, fall back to the full gameday
+    // prop snapshots rather than displaying a misleading "no props" message.
+    if (!rows.length) {
+      const gd = await krokFetch(
+        "/api/v1/gameday/props",
+        key,
+        {
+          sport_key: sportKey,
+          limit: 200,
+        }
+      );
+
+      const docs = Array.isArray(gd.data?.data) ? gd.data.data : [];
+      const flat = flattenPropObjects(docs);
+      const normalized = flat.map(x => normalizePropRow(x, sport, sportKey));
+
+      rows = normalized.filter(x => eventMatches(x.event, home, away));
+      sourceMode = "gameday-props-fallback";
+      sportRowsReturned = normalized.length;
+      sampleEvents = [...new Set(normalized.slice(0, 50).map(x => x.event).filter(Boolean))].slice(0, 8);
+      headers = gd.headers;
+    }
 
     // 3C: NRL performance markets only; keep try markets but rank them after performance markets.
     if (sport === "nrl" || sport === "nrlw") {
@@ -141,16 +250,19 @@ module.exports = async function handler(req, res) {
       home,
       away,
       generatedAt: new Date().toISOString(),
-      rateLimitRemaining: r.headers.get("x-ratelimit-remaining"),
-      creditsRemaining: r.headers.get("x-credits-remaining"),
+      rateLimitRemaining: headers?.rateLimitRemaining || null,
+      creditsRemaining: headers?.creditsRemaining || null,
+      sourceMode,
       rows,
       diagnostics: {
-        sportRowsReturned: data.length,
+        sportRowsReturned,
         matchedRows: rows.length,
-        sampleEvents: [...new Set(data.slice(0, 20).map(x => x.event).filter(Boolean))].slice(0, 8)
+        sampleEvents
       },
       note:
-        "Krok Odds provides AU bookmaker player-prop opportunities with EV estimates and optional historical statistics. These are research inputs, not guaranteed-value or Official Play decisions."
+        sourceMode === "gameday-props-fallback"
+          ? "No positive-EV Krok opportunity matched this event, so the engine fell back to Krok gameday prop snapshots. These are market/research inputs and may not have EV estimates."
+          : "Krok Odds provides AU bookmaker player-prop opportunities with EV estimates and optional historical statistics. These are research inputs, not guaranteed-value or Official Play decisions."
     });
   } catch (err) {
     console.error(err);
